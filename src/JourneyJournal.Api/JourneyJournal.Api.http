@@ -1,0 +1,6 @@
+@JourneyJournal.Api_HostAddress = http://localhost:5062
+
+GET {{JourneyJournal.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
