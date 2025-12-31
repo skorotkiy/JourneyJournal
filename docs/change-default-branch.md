@@ -24,8 +24,9 @@ git push origin main
 
 ### 3. Change Default Branch on GitHub
 
-1. Go to the repository on GitHub: https://github.com/skorotkiy/JourneyJournal
+1. Go to the repository on GitHub: `https://github.com/skorotkiy/JourneyJournal`
 2. Navigate to **Settings** → **Branches**
+   - Note: You need admin access to the repository to change this setting
 3. Under "Default branch", click the switch branches icon
 4. Select `main` from the dropdown
 5. Click "Update" and confirm the change
