@@ -1,0 +1,380 @@
+using JourneyJournal.Api.DTOs.Inputs;
+using JourneyJournal.Api.DTOs.Outputs;
+using JourneyJournal.Data;
+using JourneyJournal.Data.Entities;
+using Mapster;
+using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
+using RouteEntity = JourneyJournal.Data.Entities.Route;
+
+namespace JourneyJournal.Api.Services;
+
+/// <summary>
+/// Application service for managing trips.
+/// Orchestrates trip operations and enforces business rules.
+/// </summary>
+public class TripService
+{
+    private readonly JourneyJournalDbContext _context;
+    private readonly IMapper _mapper;
+
+    public TripService(JourneyJournalDbContext context, IMapper mapper)
+    {
+        _context = context;
+        _mapper = mapper;
+    }
+
+    /// <summary>
+    /// Retrieves all trips with their related data.
+    /// </summary>
+    public async Task<List<TripDto>> GetAllTripsAsync()
+    {
+        var trips = await _context.Trips
+            .Include(t => t.TripPoints)
+                .ThenInclude(tp => tp.Accommodations)
+            .Include(t => t.TripPoints)
+                .ThenInclude(tp => tp.RoutesFrom)
+            .Include(t => t.TripPoints)
+                .ThenInclude(tp => tp.RoutesTo)
+            .Include(t => t.TripPoints)
+                .ThenInclude(tp => tp.PlacesToVisit)
+            .Include(t => t.Expenses)
+            .OrderByDescending(t => t.StartDate)
+            .ToListAsync();
+
+        return _mapper.Map<List<TripDto>>(trips);
+    }
+
+    /// <summary>
+    /// Retrieves a specific trip by ID with all related data.
+    /// </summary>
+    public async Task<TripDto?> GetTripByIdAsync(int tripId)
+    {
+        var trip = await _context.Trips
+            .Include(t => t.TripPoints)
+                .ThenInclude(tp => tp.Accommodations)
+            .Include(t => t.TripPoints)
+                .ThenInclude(tp => tp.RoutesFrom)
+            .Include(t => t.TripPoints)
+                .ThenInclude(tp => tp.RoutesTo)
+            .Include(t => t.TripPoints)
+                .ThenInclude(tp => tp.PlacesToVisit)
+            .Include(t => t.Expenses)
+            .FirstOrDefaultAsync(t => t.TripId == tripId);
+
+        return trip is not null ? _mapper.Map<TripDto>(trip) : null;
+    }
+
+    /// <summary>
+    /// Creates a new trip with all related data.
+    /// </summary>
+    public async Task<TripDto> CreateTripAsync(CreateTripRequest request)
+    {
+        // Validate business rules
+        ValidateTripDates(request.StartDate, request.EndDate);
+
+        var trip = new Trip
+        {
+            Name = request.Name,
+            StartDate = request.StartDate,
+            EndDate = request.EndDate,
+            IsCompleted = request.IsCompleted,
+            Description = request.Description,
+            TotalCost = request.TotalCost,
+            Currency = request.Currency,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        // Create trip points with related data
+        foreach (var pointRequest in request.TripPoints.OrderBy(p => p.Order))
+        {
+            var tripPoint = new TripPoint
+            {
+                Name = pointRequest.Name,
+                Order = pointRequest.Order,
+                ArrivalDate = pointRequest.ArrivalDate,
+                DepartureDate = pointRequest.DepartureDate,
+                Address = pointRequest.Address,
+                Notes = pointRequest.Notes,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            // Add accommodations
+            foreach (var accRequest in pointRequest.Accommodations)
+            {
+                ValidateAccommodationDates(accRequest.CheckInDate, accRequest.CheckOutDate);
+
+                tripPoint.Accommodations.Add(new Accommodation
+                {
+                    Name = accRequest.Name,
+                    AccommodationType = accRequest.AccommodationType,
+                    Address = accRequest.Address,
+                    CheckInDate = accRequest.CheckInDate,
+                    CheckOutDate = accRequest.CheckOutDate,
+                    WebsiteUrl = accRequest.WebsiteUrl,
+                    Cost = accRequest.Cost,
+                    Status = accRequest.Status,
+                    Notes = accRequest.Notes,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            // Add places to visit
+            foreach (var placeRequest in pointRequest.PlacesToVisit)
+            {
+                ValidateRating(placeRequest.Rating);
+
+                tripPoint.PlacesToVisit.Add(new PlaceToVisit
+                {
+                    Name = placeRequest.Name,
+                    Category = placeRequest.Category,
+                    Address = placeRequest.Address,
+                    Description = placeRequest.Description,
+                    Price = placeRequest.Price,
+                    WebsiteUrl = placeRequest.WebsiteUrl,
+                    UsefulLinks = placeRequest.UsefulLinks,
+                    Order = placeRequest.Order,
+                    Rating = placeRequest.Rating,
+                    VisitDate = placeRequest.VisitDate,
+                    VisitStatus = placeRequest.VisitStatus,
+                    AfterVisitNotes = placeRequest.AfterVisitNotes,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            trip.TripPoints.Add(tripPoint);
+        }
+
+        // Add routes after all points are created
+        var tripPointsList = trip.TripPoints.ToList();
+        foreach (var pointRequest in request.TripPoints)
+        {
+            var currentPoint = tripPointsList.FirstOrDefault(p => p.Order == pointRequest.Order);
+            if (currentPoint is null) continue;
+
+            foreach (var routeRequest in pointRequest.Routes)
+            {
+                var fromPoint = tripPointsList.FirstOrDefault(p => p.Order == routeRequest.FromPointOrder);
+                var toPoint = tripPointsList.FirstOrDefault(p => p.Order == routeRequest.ToPointOrder);
+
+                if (fromPoint is null || toPoint is null)
+                {
+                    throw new InvalidOperationException($"Invalid route: points with order {routeRequest.FromPointOrder} or {routeRequest.ToPointOrder} not found");
+                }
+
+                if (routeRequest.FromPointOrder == routeRequest.ToPointOrder)
+                {
+                    throw new InvalidOperationException("Route cannot have the same starting and ending point");
+                }
+
+                fromPoint.RoutesFrom.Add(new RouteEntity
+                {
+                    FromPoint = fromPoint,
+                    ToPoint = toPoint,
+                    Name = routeRequest.Name,
+                    TransportationType = routeRequest.TransportationType,
+                    Carrier = routeRequest.Carrier,
+                    DepartureTime = routeRequest.DepartureTime,
+                    ArrivalTime = routeRequest.ArrivalTime,
+                    DurationMinutes = routeRequest.DurationMinutes,
+                    Cost = routeRequest.Cost,
+                    IsSelected = routeRequest.IsSelected,
+                    Notes = routeRequest.Notes,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+        }
+
+        _context.Trips.Add(trip);
+        await _context.SaveChangesAsync();
+
+        return await GetTripByIdAsync(trip.TripId) ?? throw new InvalidOperationException("Failed to retrieve created trip");
+    }
+
+    /// <summary>
+    /// Updates an existing trip with all related data.
+    /// </summary>
+    public async Task<TripDto> UpdateTripAsync(int tripId, UpdateTripRequest request)
+    {
+        var trip = await _context.Trips
+            .Include(t => t.TripPoints)
+                .ThenInclude(tp => tp.Accommodations)
+            .Include(t => t.TripPoints)
+                .ThenInclude(tp => tp.RoutesFrom)
+            .Include(t => t.TripPoints)
+                .ThenInclude(tp => tp.RoutesTo)
+            .Include(t => t.TripPoints)
+                .ThenInclude(tp => tp.PlacesToVisit)
+            .FirstOrDefaultAsync(t => t.TripId == tripId);
+
+        if (trip is null)
+        {
+            throw new KeyNotFoundException($"Trip with ID {tripId} not found");
+        }
+
+        ValidateTripDates(request.StartDate, request.EndDate);
+
+        // Update trip properties
+        trip.Name = request.Name;
+        trip.StartDate = request.StartDate;
+        trip.EndDate = request.EndDate;
+        trip.IsCompleted = request.IsCompleted;
+        trip.Description = request.Description;
+        trip.TotalCost = request.TotalCost;
+        trip.Currency = request.Currency;
+        trip.UpdatedAt = DateTime.UtcNow;
+
+        // Remove all existing trip points (cascade will handle related data)
+        _context.TripPoints.RemoveRange(trip.TripPoints);
+
+        // Recreate trip points with related data
+        trip.TripPoints.Clear();
+        foreach (var pointRequest in request.TripPoints.OrderBy(p => p.Order))
+        {
+            var tripPoint = new TripPoint
+            {
+                TripId = tripId,
+                Name = pointRequest.Name,
+                Order = pointRequest.Order,
+                ArrivalDate = pointRequest.ArrivalDate,
+                DepartureDate = pointRequest.DepartureDate,
+                Address = pointRequest.Address,
+                Notes = pointRequest.Notes,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            // Add accommodations
+            foreach (var accRequest in pointRequest.Accommodations)
+            {
+                ValidateAccommodationDates(accRequest.CheckInDate, accRequest.CheckOutDate);
+
+                tripPoint.Accommodations.Add(new Accommodation
+                {
+                    Name = accRequest.Name,
+                    AccommodationType = accRequest.AccommodationType,
+                    Address = accRequest.Address,
+                    CheckInDate = accRequest.CheckInDate,
+                    CheckOutDate = accRequest.CheckOutDate,
+                    WebsiteUrl = accRequest.WebsiteUrl,
+                    Cost = accRequest.Cost,
+                    Status = accRequest.Status,
+                    Notes = accRequest.Notes,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            // Add places to visit
+            foreach (var placeRequest in pointRequest.PlacesToVisit)
+            {
+                ValidateRating(placeRequest.Rating);
+
+                tripPoint.PlacesToVisit.Add(new PlaceToVisit
+                {
+                    Name = placeRequest.Name,
+                    Category = placeRequest.Category,
+                    Address = placeRequest.Address,
+                    Description = placeRequest.Description,
+                    Price = placeRequest.Price,
+                    WebsiteUrl = placeRequest.WebsiteUrl,
+                    UsefulLinks = placeRequest.UsefulLinks,
+                    Order = placeRequest.Order,
+                    Rating = placeRequest.Rating,
+                    VisitDate = placeRequest.VisitDate,
+                    VisitStatus = placeRequest.VisitStatus,
+                    AfterVisitNotes = placeRequest.AfterVisitNotes,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            trip.TripPoints.Add(tripPoint);
+        }
+
+        // Add routes after all points are created
+        var tripPointsList = trip.TripPoints.ToList();
+        foreach (var pointRequest in request.TripPoints)
+        {
+            var currentPoint = tripPointsList.FirstOrDefault(p => p.Order == pointRequest.Order);
+            if (currentPoint is null) continue;
+
+            foreach (var routeRequest in pointRequest.Routes)
+            {
+                var fromPoint = tripPointsList.FirstOrDefault(p => p.Order == routeRequest.FromPointOrder);
+                var toPoint = tripPointsList.FirstOrDefault(p => p.Order == routeRequest.ToPointOrder);
+
+                if (fromPoint is null || toPoint is null)
+                {
+                    throw new InvalidOperationException($"Invalid route: points with order {routeRequest.FromPointOrder} or {routeRequest.ToPointOrder} not found");
+                }
+
+                if (routeRequest.FromPointOrder == routeRequest.ToPointOrder)
+                {
+                    throw new InvalidOperationException("Route cannot have the same starting and ending point");
+                }
+
+                fromPoint.RoutesFrom.Add(new RouteEntity
+                {
+                    FromPoint = fromPoint,
+                    ToPoint = toPoint,
+                    Name = routeRequest.Name,
+                    TransportationType = routeRequest.TransportationType,
+                    Carrier = routeRequest.Carrier,
+                    DepartureTime = routeRequest.DepartureTime,
+                    ArrivalTime = routeRequest.ArrivalTime,
+                    DurationMinutes = routeRequest.DurationMinutes,
+                    Cost = routeRequest.Cost,
+                    IsSelected = routeRequest.IsSelected,
+                    Notes = routeRequest.Notes,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        return await GetTripByIdAsync(tripId) ?? throw new InvalidOperationException("Failed to retrieve updated trip");
+    }
+
+    /// <summary>
+    /// Deletes a trip and all related data.
+    /// </summary>
+    public async Task<bool> DeleteTripAsync(int tripId)
+    {
+        var trip = await _context.Trips.FindAsync(tripId);
+
+        if (trip is null)
+        {
+            return false;
+        }
+
+        _context.Trips.Remove(trip);
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
+    // Private helper methods
+
+    private static void ValidateTripDates(DateTime startDate, DateTime? endDate)
+    {
+        if (endDate.HasValue && endDate.Value < startDate)
+        {
+            throw new ArgumentException("End date must be greater than or equal to start date");
+        }
+    }
+
+    private static void ValidateAccommodationDates(DateTime? checkIn, DateTime? checkOut)
+    {
+        if (checkIn.HasValue && checkOut.HasValue && checkOut.Value < checkIn.Value)
+        {
+            throw new ArgumentException("Check-out date must be greater than or equal to check-in date");
+        }
+    }
+
+    private static void ValidateRating(short? rating)
+    {
+        if (rating.HasValue && (rating.Value < 1 || rating.Value > 5))
+        {
+            throw new ArgumentException("Rating must be between 1 and 5");
+        }
+    }
+}
