@@ -18,14 +18,17 @@ public class CreateAccommodationRequest
     [MaxLength(500)]
     public string? Address { get; set; }
 
-    public DateTime? CheckInDate { get; set; }
+    [Required]
+    public DateTime CheckInDate { get; set; }
 
-    public DateTime? CheckOutDate { get; set; }
+    [Required]
+    public DateTime CheckOutDate { get; set; }
 
     [MaxLength(500)]
     public string? WebsiteUrl { get; set; }
 
-    public decimal? Cost { get; set; }
+    [Required]
+    public decimal Cost { get; set; }
 
     [Required]
     public AccommodationStatus Status { get; set; }

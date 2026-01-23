@@ -16,11 +16,13 @@ public class ExpenseService
 {
     private readonly JourneyJournalDbContext _context;
     private readonly IMapper _mapper;
+    private readonly TripService _tripService;
 
-    public ExpenseService(JourneyJournalDbContext context, IMapper mapper)
+    public ExpenseService(JourneyJournalDbContext context, IMapper mapper, TripService tripService)
     {
         _context = context;
         _mapper = mapper;
+        _tripService = tripService;
     }
 
     /// <summary>
@@ -68,11 +70,15 @@ public class ExpenseService
             Amount = request.Amount,
             ExpenseDate = request.ExpenseDate,
             PaymentMethod = request.PaymentMethod,
+            Notes = request.Notes,
             CreatedAt = DateTime.UtcNow
         };
 
         _context.Expenses.Add(expense);
         await _context.SaveChangesAsync();
+
+        // Recalculate trip total cost
+        await _tripService.RecalculateTripTotalCostAsync(tripId);
 
         return _mapper.Map<ExpenseDto>(expense);
     }
@@ -96,9 +102,13 @@ public class ExpenseService
         expense.Amount = request.Amount;
         expense.ExpenseDate = request.ExpenseDate;
         expense.PaymentMethod = request.PaymentMethod;
+        expense.Notes = request.Notes;
         expense.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
+
+        // Recalculate trip total cost
+        await _tripService.RecalculateTripTotalCostAsync(expense.TripId);
 
         return _mapper.Map<ExpenseDto>(expense);
     }
@@ -115,8 +125,13 @@ public class ExpenseService
             return false;
         }
 
+        var tripId = expense.TripId;
+
         _context.Expenses.Remove(expense);
         await _context.SaveChangesAsync();
+
+        // Recalculate trip total cost
+        await _tripService.RecalculateTripTotalCostAsync(tripId);
 
         return true;
     }

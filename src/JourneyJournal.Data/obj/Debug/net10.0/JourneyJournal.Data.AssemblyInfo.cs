@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("JourneyJournal.Data")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+666dccc51b3f557a24952a57d687babdfb688c4d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+48283c78b2cdde5e9c88d57b5edd13ccd1a8c277")]
 [assembly: System.Reflection.AssemblyProductAttribute("JourneyJournal.Data")]
 [assembly: System.Reflection.AssemblyTitleAttribute("JourneyJournal.Data")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

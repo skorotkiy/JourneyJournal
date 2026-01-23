@@ -42,6 +42,11 @@ public class Trip
     public string? Description { get; set; }
 
     /// <summary>
+    /// Planned trip cost (budget).
+    /// </summary>
+    public decimal? PlannedCost { get; set; }
+
+    /// <summary>
     /// Total trip cost.
     /// </summary>
     public decimal? TotalCost { get; set; }
@@ -51,6 +56,11 @@ public class Trip
     /// </summary>
     [MaxLength(3)]
     public string? Currency { get; set; }
+
+    /// <summary>
+    /// Indicates whether this is the default trip.
+    /// </summary>
+    public bool IsDefault { get; set; }
 
     /// <summary>
     /// Record creation timestamp (UTC).

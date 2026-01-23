@@ -90,9 +90,6 @@ public class JourneyJournalDbContext : DbContext
             entity.Property(e => e.Order)
                 .IsRequired();
 
-            entity.Property(e => e.Address)
-                .HasMaxLength(500);
-
             entity.Property(e => e.CreatedAt)
                 .IsRequired();
 

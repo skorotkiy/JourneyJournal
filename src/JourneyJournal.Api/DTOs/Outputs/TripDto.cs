@@ -10,7 +10,9 @@ public class TripDto
     public DateTime StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public bool IsCompleted { get; set; }
+    public bool IsDefault { get; set; }
     public string? Description { get; set; }
+    public decimal? PlannedCost { get; set; }
     public decimal? TotalCost { get; set; }
     public string? Currency { get; set; }
     public DateTime CreatedAt { get; set; }

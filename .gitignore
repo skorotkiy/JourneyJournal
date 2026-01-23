@@ -1,0 +1,25 @@
+# Database files
+src/JourneyJournal.Data/db/
+
+# Build artifacts
+bin/
+obj/
+dist/
+build/
+
+# IDE
+.vs/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Environment
+.env
+.env.local
+*.log

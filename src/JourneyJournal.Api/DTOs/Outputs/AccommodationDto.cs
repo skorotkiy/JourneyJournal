@@ -12,10 +12,10 @@ public class AccommodationDto
     public string Name { get; set; } = string.Empty;
     public AccommodationType AccommodationType { get; set; }
     public string? Address { get; set; }
-    public DateTime? CheckInDate { get; set; }
-    public DateTime? CheckOutDate { get; set; }
+    public DateTime CheckInDate { get; set; }
+    public DateTime CheckOutDate { get; set; }
     public string? WebsiteUrl { get; set; }
-    public decimal? Cost { get; set; }
+    public decimal Cost { get; set; }
     public AccommodationStatus Status { get; set; }
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; }

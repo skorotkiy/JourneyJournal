@@ -41,12 +41,14 @@ public class Accommodation
     /// <summary>
     /// Check-in date and time.
     /// </summary>
-    public DateTime? CheckInDate { get; set; }
+    [Required]
+    public DateTime CheckInDate { get; set; }
 
     /// <summary>
     /// Check-out date and time.
     /// </summary>
-    public DateTime? CheckOutDate { get; set; }
+    [Required]
+    public DateTime CheckOutDate { get; set; }
 
     /// <summary>
     /// Website URL.
@@ -57,7 +59,8 @@ public class Accommodation
     /// <summary>
     /// Total accommodation cost.
     /// </summary>
-    public decimal? Cost { get; set; }
+    [Required]
+    public decimal Cost { get; set; }
 
     /// <summary>
     /// Booking status (Planned, Confirmed, Paid, etc.).

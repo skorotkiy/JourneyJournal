@@ -51,6 +51,12 @@ public class Expense
     public PaymentMethod PaymentMethod { get; set; }
 
     /// <summary>
+    /// Optional notes for the expense.
+    /// </summary>
+    [MaxLength(200)]
+    public string? Notes { get; set; }
+
+    /// <summary>
     /// Record creation timestamp (UTC).
     /// </summary>
     [Required]

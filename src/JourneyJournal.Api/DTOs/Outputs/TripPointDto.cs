@@ -9,9 +9,8 @@ public class TripPointDto
     public int TripId { get; set; }
     public string Name { get; set; } = string.Empty;
     public int Order { get; set; }
-    public DateTime? ArrivalDate { get; set; }
-    public DateTime? DepartureDate { get; set; }
-    public string? Address { get; set; }
+    public DateTime ArrivalDate { get; set; }
+    public DateTime DepartureDate { get; set; }
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }

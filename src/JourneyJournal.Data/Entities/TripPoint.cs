@@ -34,18 +34,14 @@ public class TripPoint
     /// <summary>
     /// Arrival date to this point.
     /// </summary>
-    public DateTime? ArrivalDate { get; set; }
+    [Required]
+    public DateTime ArrivalDate { get; set; }
 
     /// <summary>
     /// Departure date from this point.
     /// </summary>
-    public DateTime? DepartureDate { get; set; }
-
-    /// <summary>
-    /// Full address or location details.
-    /// </summary>
-    [MaxLength(500)]
-    public string? Address { get; set; }
+    [Required]
+    public DateTime DepartureDate { get; set; }
 
     /// <summary>
     /// Additional notes about this point.

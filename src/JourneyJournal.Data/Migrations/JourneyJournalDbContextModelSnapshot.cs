@@ -15,7 +15,7 @@ namespace JourneyJournal.Data.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.1");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.2");
 
             modelBuilder.Entity("JourneyJournal.Data.Entities.Accommodation", b =>
                 {
@@ -30,13 +30,13 @@ namespace JourneyJournal.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("CheckInDate")
+                    b.Property<DateTime>("CheckInDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("CheckOutDate")
+                    b.Property<DateTime>("CheckOutDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal?>("Cost")
+                    b.Property<decimal>("Cost")
                         .HasPrecision(18, 2)
                         .HasColumnType("TEXT");
 
@@ -93,6 +93,10 @@ namespace JourneyJournal.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("ExpenseDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("PaymentMethod")
@@ -263,9 +267,15 @@ namespace JourneyJournal.Data.Migrations
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("PlannedCost")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("StartDate")
@@ -293,17 +303,13 @@ namespace JourneyJournal.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Address")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("ArrivalDate")
+                    b.Property<DateTime>("ArrivalDate")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("DepartureDate")
+                    b.Property<DateTime>("DepartureDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")

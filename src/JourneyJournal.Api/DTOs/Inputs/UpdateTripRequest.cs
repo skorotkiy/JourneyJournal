@@ -18,7 +18,11 @@ public class UpdateTripRequest
 
     public bool IsCompleted { get; set; }
 
+    public bool IsDefault { get; set; }
+
     public string? Description { get; set; }
+
+    public decimal? PlannedCost { get; set; }
 
     public decimal? TotalCost { get; set; }
 

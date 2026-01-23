@@ -26,6 +26,7 @@ public class TripService
 
     /// <summary>
     /// Retrieves all trips with their related data.
+    /// Default trip appears first, then sorted by start date (earliest to oldest).
     /// </summary>
     public async Task<List<TripDto>> GetAllTripsAsync()
     {
@@ -39,7 +40,9 @@ public class TripService
             .Include(t => t.TripPoints)
                 .ThenInclude(tp => tp.PlacesToVisit)
             .Include(t => t.Expenses)
-            .OrderByDescending(t => t.StartDate)
+            .AsSplitQuery()
+            .OrderBy(t => t.IsDefault ? 0 : 1)
+            .ThenBy(t => t.StartDate)
             .ToListAsync();
 
         return _mapper.Map<List<TripDto>>(trips);
@@ -73,13 +76,28 @@ public class TripService
         // Validate business rules
         ValidateTripDates(request.StartDate, request.EndDate);
 
+        // If setting this trip as default, turn off default on all other trips
+        if (request.IsDefault)
+        {
+            var otherDefaultTrips = await _context.Trips
+                .Where(t => t.IsDefault)
+                .ToListAsync();
+
+            foreach (var otherTrip in otherDefaultTrips)
+            {
+                otherTrip.IsDefault = false;
+            }
+        }
+
         var trip = new Trip
         {
             Name = request.Name,
             StartDate = request.StartDate,
             EndDate = request.EndDate,
             IsCompleted = request.IsCompleted,
+            IsDefault = request.IsDefault,
             Description = request.Description,
+            PlannedCost = request.PlannedCost,
             TotalCost = request.TotalCost,
             Currency = request.Currency,
             CreatedAt = DateTime.UtcNow
@@ -94,7 +112,6 @@ public class TripService
                 Order = pointRequest.Order,
                 ArrivalDate = pointRequest.ArrivalDate,
                 DepartureDate = pointRequest.DepartureDate,
-                Address = pointRequest.Address,
                 Notes = pointRequest.Notes,
                 CreatedAt = DateTime.UtcNow
             };
@@ -219,12 +236,31 @@ public class TripService
         trip.StartDate = request.StartDate;
         trip.EndDate = request.EndDate;
         trip.IsCompleted = request.IsCompleted;
+        trip.IsDefault = request.IsDefault;
+
+        // If setting this trip as default, turn off default on all other trips
+        if (request.IsDefault)
+        {
+            var otherDefaultTrips = await _context.Trips
+                .Where(t => t.TripId != tripId && t.IsDefault)
+                .ToListAsync();
+    
+            foreach (var otherTrip in otherDefaultTrips)
+            {
+                otherTrip.IsDefault = false;
+            }
+        }
         trip.Description = request.Description;
+        trip.PlannedCost = request.PlannedCost;
         trip.TotalCost = request.TotalCost;
         trip.Currency = request.Currency;
         trip.UpdatedAt = DateTime.UtcNow;
 
         // Remove all existing trip points (cascade will handle related data)
+        // First, explicitly remove routes due to DeleteBehavior.Restrict
+        var routesToDelete = trip.TripPoints.SelectMany(tp => tp.RoutesFrom.Concat(tp.RoutesTo)).Distinct();
+        _context.Routes.RemoveRange(routesToDelete);
+        
         _context.TripPoints.RemoveRange(trip.TripPoints);
 
         // Recreate trip points with related data
@@ -238,7 +274,6 @@ public class TripService
                 Order = pointRequest.Order,
                 ArrivalDate = pointRequest.ArrivalDate,
                 DepartureDate = pointRequest.DepartureDate,
-                Address = pointRequest.Address,
                 Notes = pointRequest.Notes,
                 CreatedAt = DateTime.UtcNow
             };
@@ -352,6 +387,66 @@ public class TripService
         return true;
     }
 
+    /// <summary>
+    /// Recalculates and updates the total cost for a trip.
+    /// Includes expenses, accommodation costs, and route costs.
+    /// </summary>
+    public async Task RecalculateTripTotalCostAsync(int tripId)
+    {
+        var trip = await _context.Trips
+            .Include(t => t.Expenses)
+            .Include(t => t.TripPoints)
+                .ThenInclude(tp => tp.Accommodations)
+            .Include(t => t.TripPoints)
+                .ThenInclude(tp => tp.RoutesFrom)
+            .FirstOrDefaultAsync(t => t.TripId == tripId);
+
+        if (trip is null)
+        {
+            throw new KeyNotFoundException($"Trip with ID {tripId} not found");
+        }
+
+        var totalCost = CalculateTripTotalCost(trip);
+        trip.TotalCost = totalCost;
+        trip.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Calculates the total cost for a trip including expenses, accommodations, and routes.
+    /// </summary>
+    private static decimal CalculateTripTotalCost(Trip trip)
+    {
+        decimal totalCost = 0;
+
+        // Add all expenses
+        if (trip.Expenses is not null)
+        {
+            totalCost += trip.Expenses.Sum(e => e.Amount);
+        }
+
+        // Add accommodation costs from all trip points
+        if (trip.TripPoints is not null)
+        {
+            foreach (var tripPoint in trip.TripPoints)
+            {
+                if (tripPoint.Accommodations is not null)
+                {
+                    totalCost += tripPoint.Accommodations.Sum(a => a.Cost);
+                }
+
+                // Add route costs for routes departing from this trip point
+                if (tripPoint.RoutesFrom is not null)
+                {
+                    totalCost += tripPoint.RoutesFrom.Where(r => r.Cost.HasValue).Sum(r => r.Cost!.Value);
+                }
+            }
+        }
+
+        return totalCost;
+    }
+
     // Private helper methods
 
     private static void ValidateTripDates(DateTime startDate, DateTime? endDate)
@@ -362,9 +457,9 @@ public class TripService
         }
     }
 
-    private static void ValidateAccommodationDates(DateTime? checkIn, DateTime? checkOut)
+    private static void ValidateAccommodationDates(DateTime checkIn, DateTime checkOut)
     {
-        if (checkIn.HasValue && checkOut.HasValue && checkOut.Value < checkIn.Value)
+        if (checkOut < checkIn)
         {
             throw new ArgumentException("Check-out date must be greater than or equal to check-in date");
         }

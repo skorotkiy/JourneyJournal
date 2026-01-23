@@ -24,4 +24,7 @@ public class UpdateExpenseRequest
 
     [Required]
     public PaymentMethod PaymentMethod { get; set; }
+
+    [MaxLength(200)]
+    public string? Notes { get; set; }
 }

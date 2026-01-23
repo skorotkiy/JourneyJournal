@@ -1,35 +1,46 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import Layout from './components/layout/Layout';
+import HomePage from './pages/HomePage';
+import TripListPage from './pages/TripListPage';
+import TripsPage from './pages/TripsPage';
+import TripDetailPage from './pages/TripDetailPage';
+import CreateTripPage from './pages/CreateTripPage';
+import ExpensesPage from './pages/ExpensesPage';
+import EditExpensePage from './pages/EditExpensePage';
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2',
+    },
+    secondary: {
+      main: '#dc004e',
+    },
+  },
+});
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<HomePage />} />
+            <Route path="trips" element={<TripListPage />} />
+            <Route path="trips/view" element={<TripsPage />} />
+            <Route path="trips/:tripId" element={<TripDetailPage />} />
+            <Route path="trips/create" element={<CreateTripPage />} />
+            <Route path="expenses" element={<ExpensesPage />} />
+            <Route path="expenses/create" element={<ExpensesPage />} />
+            <Route path="trips/:tripId/expenses/:expenseId/edit" element={<EditExpensePage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
+  );
 }
 
-export default App
+export default App;

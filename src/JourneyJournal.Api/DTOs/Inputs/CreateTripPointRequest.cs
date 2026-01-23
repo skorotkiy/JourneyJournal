@@ -14,12 +14,11 @@ public class CreateTripPointRequest
     [Required]
     public int Order { get; set; }
 
-    public DateTime? ArrivalDate { get; set; }
+    [Required]
+    public DateTime ArrivalDate { get; set; }
 
-    public DateTime? DepartureDate { get; set; }
-
-    [MaxLength(500)]
-    public string? Address { get; set; }
+    [Required]
+    public DateTime DepartureDate { get; set; }
 
     public string? Notes { get; set; }
 
