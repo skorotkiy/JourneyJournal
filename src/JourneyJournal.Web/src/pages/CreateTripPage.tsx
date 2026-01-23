@@ -360,7 +360,15 @@ const CreateTripPage = () => {
                 type="submit"
                 disabled={loading}
                 size="small"
-                sx={{ fontSize: '0.7rem', py: 0.4, px: 1.2 }}
+                sx={{
+                  fontSize: '0.7rem',
+                  py: 0.4,
+                  px: 1.2,
+                  backgroundColor: '#e3f2fd',
+                  color: '#1976d2',
+                  '&:hover': { backgroundColor: '#bbdefb' },
+                  border: '1px solid #90caf9',
+                }}
               >
                 {loading ? 'Saving...' : 'Save'}
               </Button>

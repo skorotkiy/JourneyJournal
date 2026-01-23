@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Paper,
@@ -7,13 +7,11 @@ import {
   Stack,
   Alert,
   TextField,
-  IconButton,
-  Divider,
   Dialog,
   DialogTitle,
   DialogActions,
 } from '@mui/material';
-import { EditOutlined as EditIcon, DeleteOutline as DeleteIcon, Close as CloseIcon, Check as CheckIcon, Add as AddIcon } from '@mui/icons-material';
+import { EditOutlined as EditIcon, DeleteOutline as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
 import type { TripPoint, Accommodation, Route } from '../types/trip';
 import AccommodationForm from './AccommodationForm';
 import AccommodationSummary from './AccommodationSummary';
@@ -50,11 +48,20 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const accommodationFormRef = useRef<HTMLDivElement>(null);
+
   // Sync local state with prop changes
   useEffect(() => {
     setAccommodations(tripPoint.accommodations || []);
     setRoutes(tripPoint.routesFrom || []);
   }, [tripPoint]);
+
+  // Scroll to accommodation form when it's shown
+  useEffect(() => {
+    if (showAccommodationForm && accommodationFormRef.current) {
+      accommodationFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [showAccommodationForm]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -420,6 +427,28 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
                 }}
               />
             ))}
+
+            {showAccommodationForm && (
+              <Box ref={accommodationFormRef} sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+                <AccommodationForm
+                  tripPointId={tripPoint.tripPointId}
+                  onCancel={() => setShowAccommodationForm(false)}
+                  onSuccess={(newAccommodation) => {
+                    const updatedAccommodations = [...accommodations, newAccommodation];
+                    setAccommodations(updatedAccommodations);
+                    
+                    // Update trip point with new accommodation
+                    const updatedTripPoint = {
+                      ...tripPoint,
+                      accommodations: updatedAccommodations,
+                    };
+                    onEdit(updatedTripPoint);
+                    
+                    setShowAccommodationForm(false);
+                  }}
+                />
+              </Box>
+            )}
           </Box>
 
           {routes.length > 0 && (
@@ -448,28 +477,6 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
             </Box>
           )}
         </Stack>
-
-        {showAccommodationForm && (
-          <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
-            <AccommodationForm
-              tripPointId={tripPoint.tripPointId}
-              onCancel={() => setShowAccommodationForm(false)}
-              onSuccess={(newAccommodation) => {
-                const updatedAccommodations = [...accommodations, newAccommodation];
-                setAccommodations(updatedAccommodations);
-                
-                // Update trip point with new accommodation
-                const updatedTripPoint = {
-                  ...tripPoint,
-                  accommodations: updatedAccommodations,
-                };
-                onEdit(updatedTripPoint);
-                
-                setShowAccommodationForm(false);
-              }}
-            />
-          </Box>
-        )}
 
         {showRouteForm && hasNextPoint && nextPointId && (
           <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
@@ -515,11 +522,11 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
           >
             Add next point
           </Button>
-          {hasNextPoint && (
+          {hasNextPoint && !showRouteForm && (
             <Button
               variant="contained"
               size="small"
-              onClick={() => setShowRouteForm(!showRouteForm)}
+              onClick={() => setShowRouteForm(true)}
               sx={{
                 fontSize: '0.7rem',
                 py: 0.4,
@@ -530,7 +537,7 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
                 border: '1px solid #90caf9',
               }}
             >
-              {showRouteForm ? 'Cancel' : 'Add Route'}
+              Add Route
             </Button>
           )}
         </Box>

@@ -510,7 +510,7 @@ const TripDetailPage = () => {
             </Button>
           </Box>
 
-          <Paper elevation={3} sx={{ p: 3 }}>
+          <Paper elevation={3} sx={{ p: 3, backgroundColor: '#f9f9f9' }}>
             <Stack spacing={2}>
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                 <Box>

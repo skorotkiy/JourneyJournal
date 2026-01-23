@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   Box,
+  Paper,
   Typography,
   TextField,
   Button,
@@ -115,7 +116,7 @@ const AccommodationForm = ({ tripPointId, onCancel, onSuccess }: AccommodationFo
   };
 
   return (
-    <Box>
+    <Paper elevation={1} sx={{ p: 2.5, borderRadius: 2, backgroundColor: 'background.paper' }}>
       <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
         Add Accommodation
       </Typography>
@@ -163,27 +164,6 @@ const AccommodationForm = ({ tripPointId, onCancel, onSuccess }: AccommodationFo
               <MenuItem value={AccommodationType.Airbnb}>Airbnb</MenuItem>
               <MenuItem value={AccommodationType.Other}>Other</MenuItem>
             </TextField>
-
-            <TextField
-              select
-              label="Status"
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              sx={{ 
-                width: '150px',
-                '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiSelect-select': { padding: '4px 10px' }
-              }}
-              size="small"
-            >
-              <MenuItem value={AccommodationStatus.Planned}>Planned</MenuItem>
-              <MenuItem value={AccommodationStatus.Confirmed}>Confirmed</MenuItem>
-              <MenuItem value={AccommodationStatus.PaymentRequired}>Payment Required</MenuItem>
-              <MenuItem value={AccommodationStatus.Paid}>Paid</MenuItem>
-              <MenuItem value={AccommodationStatus.Cancelled}>Cancelled</MenuItem>
-            </TextField>
           </Box>
 
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
@@ -226,7 +206,9 @@ const AccommodationForm = ({ tripPointId, onCancel, onSuccess }: AccommodationFo
               }}
               size="small"
             />
+          </Box>
 
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <TextField
               required
               label="Cost"
@@ -246,6 +228,27 @@ const AccommodationForm = ({ tripPointId, onCancel, onSuccess }: AccommodationFo
               }}
               size="small"
             />
+
+            <TextField
+              select
+              label="Status"
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              sx={{ 
+                width: '150px',
+                '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
+                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
+                '& .MuiSelect-select': { padding: '4px 10px' }
+              }}
+              size="small"
+            >
+              <MenuItem value={AccommodationStatus.Planned}>Planned</MenuItem>
+              <MenuItem value={AccommodationStatus.Confirmed}>Confirmed</MenuItem>
+              <MenuItem value={AccommodationStatus.PaymentRequired}>Payment Required</MenuItem>
+              <MenuItem value={AccommodationStatus.Paid}>Paid</MenuItem>
+              <MenuItem value={AccommodationStatus.Cancelled}>Cancelled</MenuItem>
+            </TextField>
           </Box>
 
           <TextField
@@ -316,14 +319,22 @@ const AccommodationForm = ({ tripPointId, onCancel, onSuccess }: AccommodationFo
               type="submit"
               disabled={loading}
               size="small"
-              sx={{ fontSize: '0.7rem', py: 0.4, px: 1.2 }}
+              sx={{
+                fontSize: '0.7rem',
+                py: 0.4,
+                px: 1.2,
+                backgroundColor: '#e3f2fd',
+                color: '#1976d2',
+                '&:hover': { backgroundColor: '#bbdefb' },
+                border: '1px solid #90caf9',
+              }}
             >
-              {loading ? 'Adding...' : 'Add Accommodation'}
+              {loading ? 'Saving...' : 'Save'}
             </Button>
           </Box>
         </Stack>
       </Box>
-    </Box>
+    </Paper>
   );
 };
 

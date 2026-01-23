@@ -113,7 +113,11 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
   };
 
   return (
-    <Paper elevation={1} sx={{ p: 2.5, borderRadius: 2 }}>
+    <Paper elevation={1} sx={{ p: 2.5, borderRadius: 2, backgroundColor: 'background.paper' }}>
+      <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
+        Add route
+      </Typography>
+      
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
           {routeName}
@@ -133,7 +137,7 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
       
       <Box component="form" onSubmit={handleSubmit}>
         <Stack spacing={2}>
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'nowrap' }}>
             <TextField
               select
               label="Transport Type"
@@ -163,8 +167,7 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
               onChange={handleChange}
               placeholder="Airline, train company, etc."
               sx={{ 
-                flex: 1, 
-                minWidth: '200px',
+                width: '180px',
                 '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
                 '& .MuiInputLabel-root': { fontSize: '0.75rem' },
                 '& .MuiInputBase-input': { padding: '4px 10px' }
@@ -198,7 +201,7 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
               onChange={handleChange}
               InputLabelProps={{ shrink: true }}
               sx={{ 
-                width: '200px',
+                width: '170px',
                 '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
                 '& .MuiInputLabel-root': { fontSize: '0.75rem' },
                 '& .MuiInputBase-input': { padding: '4px 10px' }
@@ -216,7 +219,7 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
               helperText={errors.arrivalTime}
               InputLabelProps={{ shrink: true }}
               sx={{ 
-                width: '200px',
+                width: '170px',
                 '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
                 '& .MuiInputLabel-root': { fontSize: '0.75rem' },
                 '& .MuiInputBase-input': { padding: '4px 10px' },
@@ -289,7 +292,7 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
                 border: '1px solid #90caf9',
               }}
             >
-              {loading ? 'Adding...' : 'Add Route'}
+              {loading ? 'Saving...' : 'Save'}
             </Button>
           </Box>
         </Stack>

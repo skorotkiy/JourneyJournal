@@ -262,7 +262,7 @@ const ExpensesPage = () => {
       <Box sx={{ maxWidth: 500, mx: 'auto', py: 4 }}>
         <Paper elevation={3} sx={{ p: 4 }}>
           <Typography variant="h5" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
-            Add expense to "{currentTrip.name}" trip
+            {currentTrip ? `Add expense to ${currentTrip.name}` : 'Add Expense'}
           </Typography>
           <ExpenseForm
             tripId={currentTrip.tripId}

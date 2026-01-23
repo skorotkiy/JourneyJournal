@@ -233,7 +233,14 @@ const AccommodationSummary = ({ accommodation, onEdit, onRemove }: Accommodation
                 error={!!errors.name}
                 helperText={errors.name}
                 inputProps={{ maxLength: 200 }}
-                sx={{ flex: 1, minWidth: '200px' }}
+                sx={{ 
+                  flex: 1, 
+                  minWidth: '200px',
+                  '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
+                  '& .MuiInputLabel-root': { fontSize: '0.75rem' },
+                  '& .MuiInputBase-input': { padding: '4px 10px' },
+                  '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
+                }}
                 size="small"
               />
 
@@ -243,7 +250,12 @@ const AccommodationSummary = ({ accommodation, onEdit, onRemove }: Accommodation
                 name="accommodationType"
                 value={formData.accommodationType}
                 onChange={handleChange}
-                sx={{ width: '150px' }}
+                sx={{ 
+                  width: '150px',
+                  '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
+                  '& .MuiInputLabel-root': { fontSize: '0.75rem' },
+                  '& .MuiSelect-select': { padding: '4px 10px' }
+                }}
                 size="small"
               >
                 <MenuItem value={AccommodationType.Booking}>Booking</MenuItem>
@@ -252,6 +264,66 @@ const AccommodationSummary = ({ accommodation, onEdit, onRemove }: Accommodation
                 <MenuItem value={AccommodationType.Airbnb}>Airbnb</MenuItem>
                 <MenuItem value={AccommodationType.Other}>Other</MenuItem>
               </TextField>
+            </Box>
+
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <TextField
+                required
+                label="Check-in Date"
+                name="checkInDate"
+                type="date"
+                value={formData.checkInDate}
+                onChange={handleChange}
+                InputLabelProps={{ shrink: true }}
+                sx={{ 
+                  width: '180px',
+                  '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
+                  '& .MuiInputLabel-root': { fontSize: '0.75rem' },
+                  '& .MuiInputBase-input': { padding: '4px 10px' },
+                  '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
+                }}
+                size="small"
+              />
+
+              <TextField
+                required
+                label="Check-out Date"
+                name="checkOutDate"
+                type="date"
+                value={formData.checkOutDate}
+                onChange={handleChange}
+                error={!!errors.checkOutDate}
+                helperText={errors.checkOutDate}
+                InputLabelProps={{ shrink: true }}
+                sx={{ 
+                  width: '180px',
+                  '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
+                  '& .MuiInputLabel-root': { fontSize: '0.75rem' },
+                  '& .MuiInputBase-input': { padding: '4px 10px' },
+                  '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
+                }}
+                size="small"
+              />
+            </Box>
+
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <TextField
+                required
+                label="Cost"
+                name="cost"
+                type="number"
+                value={formData.cost}
+                onChange={handleChange}
+                inputProps={{ min: 0, step: 0.01 }}
+                sx={{ 
+                  width: '120px',
+                  '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
+                  '& .MuiInputLabel-root': { fontSize: '0.75rem' },
+                  '& .MuiInputBase-input': { padding: '4px 10px' },
+                  '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
+                }}
+                size="small"
+              />
 
               <TextField
                 select
@@ -259,7 +331,12 @@ const AccommodationSummary = ({ accommodation, onEdit, onRemove }: Accommodation
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                sx={{ width: '150px' }}
+                sx={{ 
+                  width: '150px',
+                  '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
+                  '& .MuiInputLabel-root': { fontSize: '0.75rem' },
+                  '& .MuiSelect-select': { padding: '4px 10px' }
+                }}
                 size="small"
               >
                 <MenuItem value={AccommodationStatus.Planned}>Planned</MenuItem>
@@ -270,43 +347,6 @@ const AccommodationSummary = ({ accommodation, onEdit, onRemove }: Accommodation
               </TextField>
             </Box>
 
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-              <TextField
-                label="Check-in Date"
-                name="checkInDate"
-                type="date"
-                value={formData.checkInDate}
-                onChange={handleChange}
-                InputLabelProps={{ shrink: true }}
-                sx={{ width: '180px' }}
-                size="small"
-              />
-
-              <TextField
-                label="Check-out Date"
-                name="checkOutDate"
-                type="date"
-                value={formData.checkOutDate}
-                onChange={handleChange}
-                error={!!errors.checkOutDate}
-                helperText={errors.checkOutDate}
-                InputLabelProps={{ shrink: true }}
-                sx={{ width: '180px' }}
-                size="small"
-              />
-
-              <TextField
-                label="Cost"
-                name="cost"
-                type="number"
-                value={formData.cost}
-                onChange={handleChange}
-                inputProps={{ min: 0, step: 0.01 }}
-                sx={{ width: '120px' }}
-                size="small"
-              />
-            </Box>
-
             <TextField
               fullWidth
               label="Address"
@@ -314,6 +354,12 @@ const AccommodationSummary = ({ accommodation, onEdit, onRemove }: Accommodation
               value={formData.address}
               onChange={handleChange}
               inputProps={{ maxLength: 500 }}
+              placeholder="Full address"
+              sx={{
+                '& .MuiInputBase-root': { fontSize: '0.75rem', minHeight: '32px' },
+                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
+                '& .MuiInputBase-input': { padding: '4px 10px' }
+              }}
               size="small"
             />
 
@@ -323,6 +369,11 @@ const AccommodationSummary = ({ accommodation, onEdit, onRemove }: Accommodation
               name="websiteUrl"
               value={formData.websiteUrl}
               onChange={handleChange}
+              sx={{
+                '& .MuiInputBase-root': { fontSize: '0.75rem', minHeight: '32px' },
+                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
+                '& .MuiInputBase-input': { padding: '4px 10px' }
+              }}
               size="small"
             />
 
@@ -334,6 +385,11 @@ const AccommodationSummary = ({ accommodation, onEdit, onRemove }: Accommodation
               onChange={handleChange}
               multiline
               rows={2}
+              sx={{
+                '& .MuiInputBase-root': { fontSize: '0.75rem' },
+                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
+                '& .MuiInputBase-input': { padding: '4px 10px' }
+              }}
               size="small"
             />
 
