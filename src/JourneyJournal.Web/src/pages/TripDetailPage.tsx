@@ -6,7 +6,6 @@ import {
   Typography,
   Button,
   Stack,
-  Divider,
   CircularProgress,
   Alert,
   TextField,
@@ -29,6 +28,8 @@ import TripPointForm from '../components/TripPointForm';
 import TripPointSummary from '../components/TripPointSummary';
 import ExpenseForm from '../components/ExpenseForm';
 import ExpenseView from '../components/ExpenseView';
+
+
 
 const TripDetailPage = () => {
   const navigate = useNavigate();
@@ -572,41 +573,81 @@ const TripDetailPage = () => {
                   borderColor: 'divider',
                 }}
               >
-                <Button
-                  variant="contained"
-                  fullWidth
-                  onClick={() => setShowTripPointForm(!showTripPointForm)}
-                  disabled={trip.isCompleted}
-                  size="small"
-                  sx={{
-                    fontSize: '0.7rem',
-                    py: 0.4,
-                    px: 1.2,
-                    backgroundColor: '#e3f2fd',
-                    color: '#1976d2',
-                    '&:hover': { backgroundColor: '#bbdefb' },
-                    border: '1px solid #90caf9',
-                  }}
-                >
-                  {showTripPointForm ? 'Cancel' : '+ Add Trip Point'}
-                </Button>
-                <Button
-                  variant="contained"
-                  fullWidth
-                  onClick={() => setShowExpenseForm(!showExpenseForm)}
-                  size="small"
-                  sx={{
-                    fontSize: '0.7rem',
-                    py: 0.4,
-                    px: 1.2,
-                    backgroundColor: '#e3f2fd',
-                    color: '#1976d2',
-                    '&:hover': { backgroundColor: '#bbdefb' },
-                    border: '1px solid #90caf9',
-                  }}
-                >
-                  {showExpenseForm ? 'Cancel' : '+ Add Expense'}
-                </Button>
+                {showTripPointForm ? (
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    disabled
+                    size="small"
+                    sx={{
+                      fontSize: '0.7rem',
+                      py: 0.4,
+                      px: 1.2,
+                      backgroundColor: '#e3f2fd',
+                      color: 'transparent',
+                      border: '1px solid #90caf9',
+                      visibility: 'hidden',
+                    }}
+                  >
+                    Add Trip Point
+                  </Button>
+                ) : (
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    onClick={() => setShowTripPointForm(true)}
+                    disabled={trip.isCompleted}
+                    size="small"
+                    sx={{
+                      fontSize: '0.7rem',
+                      py: 0.4,
+                      px: 1.2,
+                      backgroundColor: '#e3f2fd',
+                      color: '#1976d2',
+                      '&:hover': { backgroundColor: '#bbdefb' },
+                      border: '1px solid #90caf9',
+                    }}
+                  >
+                    Add Trip Point
+                  </Button>
+                )}
+                {showExpenseForm ? (
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    disabled
+                    size="small"
+                    sx={{
+                      fontSize: '0.7rem',
+                      py: 0.4,
+                      px: 1.2,
+                      backgroundColor: '#e3f2fd',
+                      color: 'transparent',
+                      border: '1px solid #90caf9',
+                      visibility: 'hidden',
+                    }}
+                  >
+                    Add Expense
+                  </Button>
+                ) : (
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    onClick={() => setShowExpenseForm(true)}
+                    size="small"
+                    sx={{
+                      fontSize: '0.7rem',
+                      py: 0.4,
+                      px: 1.2,
+                      backgroundColor: '#e3f2fd',
+                      color: '#1976d2',
+                      '&:hover': { backgroundColor: '#bbdefb' },
+                      border: '1px solid #90caf9',
+                    }}
+                  >
+                    Add Expense
+                  </Button>
+                )}
                 <Button
                   variant="contained"
                   fullWidth
@@ -633,7 +674,9 @@ const TripDetailPage = () => {
       {!isEditing && showTripPointForm && trip && (
         <TripPointForm
           tripId={trip.tripId}
-          nextOrder={(trip.tripPoints?.length || 0) + createdTripPoints.length}
+          tripStartDate={trip.startDate ? trip.startDate.split('T')[0] : undefined}
+          tripEndDate={trip.endDate ? trip.endDate.split('T')[0] : undefined}
+          prevTripPointDepartureDate={trip.tripPoints && trip.tripPoints.length > 0 ? trip.tripPoints[trip.tripPoints.length - 1].departureDate.split('T')[0] : undefined}
           onCancel={() => setShowTripPointForm(false)}
           onSuccess={async (newTripPoint) => {
             try {
@@ -663,23 +706,25 @@ const TripDetailPage = () => {
       )}
 
       {!isEditing && showExpenseForm && !expenseSuccess && trip && (
-        <>
-          <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, mt: 3 }}>
-            Add expense to "{trip.name}" trip
+        <Paper elevation={3} sx={{ px: 4, pt: 2, pb: 2, mt: 2 }}>
+          <Typography
+            variant="subtitle1"
+            component="h1"
+            gutterBottom
+            sx={{ fontWeight: 600, color: '#1976d2', mb: 1, fontSize: '1.05rem' }}
+          >
+            Add expense
           </Typography>
-          <Paper elevation={3} sx={{ p: 3 }}>
-            <ExpenseForm
-              tripId={trip.tripId}
-              tripName={trip.name}
-              onCancel={() => setShowExpenseForm(false)}
-              onSuccess={(expense) => {
-                setNewExpense(expense);
-                setExpenseSuccess(true);
-                setShowExpenseForm(false);
-              }}
-            />
-          </Paper>
-        </>
+          <ExpenseForm
+            tripId={trip.tripId}
+            onCancel={() => setShowExpenseForm(false)}
+            onSuccess={(expense) => {
+              setNewExpense(expense);
+              setExpenseSuccess(true);
+              setShowExpenseForm(false);
+            }}
+          />
+        </Paper>
       )}
 
       {!isEditing && expenseSuccess && newExpense && trip && (
@@ -719,7 +764,6 @@ const TripDetailPage = () => {
                     const updatedTripPoints = (trip.tripPoints || []).map((tp) =>
                       tp.tripPointId === updatedTripPoint.tripPointId ? updatedTripPoint : tp
                     );
-
                     const updatedTripData = {
                       name: trip.name,
                       description: trip.description,
@@ -752,7 +796,6 @@ const TripDetailPage = () => {
                           (route) => route.toPointId !== tripPoint.tripPointId
                         ),
                       }));
-                    
                     const updatedTripData = {
                       name: trip.name,
                       description: trip.description,
@@ -787,45 +830,88 @@ const TripDetailPage = () => {
                 nextPointArrivalDate={
                   index < (trip.tripPoints || []).length - 1 ? (trip.tripPoints || [])[index + 1].arrivalDate : undefined
                 }
+                renderAddNextPointButton={() => (
+                  addAfterPointId === tripPoint.tripPointId || showTripPointForm ? (
+                    <Button
+                      variant="contained"
+                      disabled
+                      size="small"
+                      sx={{
+                        fontSize: '0.7rem',
+                        py: 0.4,
+                        px: 1.2,
+                        backgroundColor: '#e3f2fd',
+                        color: 'transparent',
+                        border: '1px solid #90caf9',
+                        visibility: 'hidden',
+                        minWidth: 0,
+                        flex: 1,
+                      }}
+                    >
+                      Save
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      onClick={() => {
+                        setAddAfterPointId(tripPoint.tripPointId);
+                        setShowTripPointForm(false);
+                      }}
+                      size="small"
+                      sx={{
+                        fontSize: '0.7rem',
+                        py: 0.4,
+                        px: 1.2,
+                        backgroundColor: '#e3f2fd',
+                        color: '#1976d2',
+                        '&:hover': { backgroundColor: '#bbdefb' },
+                        border: '1px solid #90caf9',
+                        minWidth: 0,
+                        flex: 1,
+                      }}
+                    >
+                      Add Trip Point
+                    </Button>
+                  )
+                )}
               />
               {addAfterPointId === tripPoint.tripPointId && trip && (
-                <TripPointForm
-                  tripId={trip.tripId}
-                  nextOrder={tripPoint.order + 1}
-                  onCancel={() => setAddAfterPointId(null)}
-                  onSuccess={async (newTripPoint) => {
-                    try {
-                      // Insert new trip point and reorder
-                      const updatedTripPoints = [...(trip.tripPoints || [])];
-                      const insertIndex = updatedTripPoints.findIndex(tp => tp.tripPointId === tripPoint.tripPointId) + 1;
-                      updatedTripPoints.splice(insertIndex, 0, newTripPoint);
-                      
-                      // Reorder all points
-                      updatedTripPoints.forEach((tp, idx) => {
-                        tp.order = idx;
-                      });
-
-                      const updatedTripData = {
-                        name: trip.name,
-                        description: trip.description,
-                        startDate: trip.startDate.split('T')[0],
-                        endDate: trip.endDate ? trip.endDate.split('T')[0] : undefined,
-                        plannedCost: trip.plannedCost,
-                        totalCost: trip.totalCost,
-                        currency: trip.currency,
-                        isCompleted: trip.isCompleted,
-                        isDefault: trip.isDefault,
-                        tripPoints: updatedTripPoints,
-                      };
-                      const updatedTrip = await tripService.update(trip.tripId.toString(), updatedTripData);
-                      setTrip(updatedTrip);
-                      setAddAfterPointId(null);
-                    } catch (err) {
-                      console.error('Failed to add trip point:', err);
-                      setError('Failed to add trip point. Please try again.');
-                    }
-                  }}
-                />
+                <Box sx={{ mb: 2 }}>
+                  <TripPointForm
+                    tripId={trip.tripId}
+                    onCancel={() => setAddAfterPointId(null)}
+                    onSuccess={async (newTripPoint) => {
+                      try {
+                        // Insert new trip point and reorder
+                        const updatedTripPoints = [...(trip.tripPoints || [])];
+                        const insertIndex = updatedTripPoints.findIndex(tp => tp.tripPointId === tripPoint.tripPointId) + 1;
+                        updatedTripPoints.splice(insertIndex, 0, newTripPoint);
+                        // Reorder all points
+                        updatedTripPoints.forEach((tp, idx) => {
+                          tp.order = idx;
+                        });
+                        const updatedTripData = {
+                          name: trip.name,
+                          description: trip.description,
+                          startDate: trip.startDate.split('T')[0],
+                          endDate: trip.endDate ? trip.endDate.split('T')[0] : undefined,
+                          plannedCost: trip.plannedCost,
+                          totalCost: trip.totalCost,
+                          currency: trip.currency,
+                          isCompleted: trip.isCompleted,
+                          isDefault: trip.isDefault,
+                          tripPoints: updatedTripPoints,
+                        };
+                        const updatedTrip = await tripService.update(trip.tripId.toString(), updatedTripData);
+                        setTrip(updatedTrip);
+                        setAddAfterPointId(null);
+                      } catch (err) {
+                        console.error('Failed to add trip point:', err);
+                        setError('Failed to add trip point. Please try again.');
+                      }
+                    }}
+                  />
+                </Box>
               )}
             </Box>
           ))}
@@ -869,7 +955,6 @@ const TripDetailPage = () => {
               {addAfterPointId === tripPoint.tripPointId && trip && (
                 <TripPointForm
                   tripId={trip.tripId}
-                  nextOrder={(trip.tripPoints?.length || 0) + createdTripPoints.length}
                   onCancel={() => setAddAfterPointId(null)}
                   onSuccess={(newTripPoint) => {
                     setCreatedTripPoints((prev) => [...prev, newTripPoint]);

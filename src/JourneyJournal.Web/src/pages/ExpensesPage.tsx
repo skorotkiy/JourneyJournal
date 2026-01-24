@@ -14,8 +14,9 @@ import {
   Chip,
   Button,
 } from '@mui/material';
-import { tripService } from '../services/tripService';
+
 import { expenseService } from '../services/expenseService';
+import { tripService } from '../services/tripService';
 import type { Trip } from '../types/trip';
 import type { Expense } from '../types/expense';
 import { ExpenseCategory, PaymentMethod } from '../types/expense';
@@ -130,7 +131,7 @@ const ExpensesPage = () => {
         }
       } catch (err) {
         console.error('Failed to fetch trip:', err);
-        setError('Failed to load trip expenses. Please try again.');
+        setError('Failed to load trip data. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -205,6 +206,13 @@ const ExpensesPage = () => {
   };
 
   const expenses = currentTrip?.expenses || [];
+  // Helper to sum amounts
+  const getTotalAmount = (expenseList: Expense[]) => expenseList.reduce((sum, exp) => sum + exp.amount, 0);
+
+  // Calculate summary values for expenses
+  const totalAmount = getTotalAmount(expenses);
+  const totalCash = getTotalAmount(expenses.filter(e => e.paymentMethod === PaymentMethod.Cash));
+  const totalCard = getTotalAmount(expenses.filter(e => e.paymentMethod === PaymentMethod.CreditCard));
   const sortedExpenses = [...expenses].sort((a, b) => 
     new Date(a.expenseDate).getTime() - new Date(b.expenseDate).getTime()
   );
@@ -218,9 +226,7 @@ const ExpensesPage = () => {
     return acc;
   }, {} as Record<string, Expense[]>);
 
-  const getTotalAmount = (expenseList: Expense[]) => {
-    return expenseList.reduce((sum, exp) => sum + exp.amount, 0);
-  };
+  // (removed duplicate definition)
 
   if (loading) {
     return (
@@ -266,9 +272,8 @@ const ExpensesPage = () => {
           </Typography>
           <ExpenseForm
             tripId={currentTrip.tripId}
-            tripName={currentTrip.name}
             onCancel={() => navigate('/')}
-            onSuccess={(expense) => {
+            onSuccess={() => {
               navigate('/');
             }}
           />
@@ -329,6 +334,16 @@ const ExpensesPage = () => {
           >
             Trip
           </Button>
+        </Box>
+
+        {/* Summary */}
+        <Box sx={{ px: 2, py: 1, borderBottom: 1, borderColor: 'divider' }}>
+          <Typography variant="body1" sx={{ mb: 0.5 }}>
+            All Expenses: {totalAmount.toFixed(2)} {currentTrip.currency || 'EUR'}
+          </Typography>
+          <Typography variant="body1">
+            Expenses by Payment Method: Cash {totalCash.toFixed(2)} + Card {totalCard.toFixed(2)}
+          </Typography>
         </Box>
 
         <TabPanel value={tabValue} index={0}>

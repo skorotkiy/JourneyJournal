@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogActions,
 } from '@mui/material';
-import { EditOutlined as EditIcon, DeleteOutline as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
+import { EditOutlined as EditIcon, DeleteOutline as DeleteIcon } from '@mui/icons-material';
 import type { TripPoint, Accommodation, Route } from '../types/trip';
 import AccommodationForm from './AccommodationForm';
 import AccommodationSummary from './AccommodationSummary';
@@ -28,9 +28,10 @@ interface TripPointSummaryProps {
   nextPointId?: number;
   nextPointName?: string;
   nextPointArrivalDate?: string;
+  renderAddNextPointButton?: () => React.ReactNode;
 }
 
-const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNextPoint = false, nextPointId, nextPointName = '', nextPointArrivalDate }: TripPointSummaryProps) => {
+const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNextPoint = false, nextPointId, nextPointName = '', nextPointArrivalDate, renderAddNextPointButton }: TripPointSummaryProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showRouteWarning, setShowRouteWarning] = useState(false);
@@ -194,13 +195,12 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
 
   if (isEditing) {
     return (
-      <Paper elevation={2} sx={{ p: 3, mb: 2, backgroundColor: '#f5f5f5' }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
+      <Paper elevation={3} sx={{ px: 4, pt: 2, pb: 2, mt: 2, mb: 4 }}>
+        <Typography variant="subtitle1" component="h1" gutterBottom sx={{ fontWeight: 600, color: '#1976d2', mb: 1, fontSize: '1.05rem' }}>
           Edit Trip Point
         </Typography>
-
         <Box component="form" onSubmit={handleSubmit}>
-          <Stack spacing={3}>
+          <Stack spacing={2}>
             <TextField
               required
               label="Location Name"
@@ -210,10 +210,15 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
               error={!!errors.name}
               helperText={errors.name}
               inputProps={{ maxLength: 200 }}
-              sx={{ width: '100%' }}
+              sx={{
+                width: '100%',
+                '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
+                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
+                '& .MuiInputBase-input': { padding: '4px 10px' },
+                '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
+              }}
               size="small"
             />
-
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               <TextField
                 required
@@ -224,12 +229,16 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
                 onChange={handleChange}
                 error={!!errors.arrivalDate}
                 helperText={errors.arrivalDate}
-                placeholder="YYYY-MM-DD"
                 InputLabelProps={{ shrink: true }}
-                sx={{ width: '180px' }}
+                sx={{
+                  width: '180px',
+                  '& .MuiInputBase-root': { fontSize: '0.875rem', height: '36px' },
+                  '& .MuiInputLabel-root': { fontSize: '0.875rem' },
+                  '& .MuiInputBase-input': { padding: '6px 12px' },
+                  '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
+                }}
                 size="small"
               />
-
               <TextField
                 required
                 label="Departure Date"
@@ -239,13 +248,17 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
                 onChange={handleChange}
                 error={!!errors.departureDate}
                 helperText={errors.departureDate}
-                placeholder="YYYY-MM-DD"
                 InputLabelProps={{ shrink: true }}
-                sx={{ width: '180px' }}
+                sx={{
+                  width: '180px',
+                  '& .MuiInputBase-root': { fontSize: '0.875rem', height: '36px' },
+                  '& .MuiInputLabel-root': { fontSize: '0.875rem' },
+                  '& .MuiInputBase-input': { padding: '6px 12px' },
+                  '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
+                }}
                 size="small"
               />
             </Box>
-
             <TextField
               fullWidth
               label="Notes"
@@ -253,21 +266,23 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
               value={formData.notes}
               onChange={handleChange}
               multiline
-              rows={3}
+              rows={2}
               placeholder="Additional notes about this location..."
+              sx={{
+                '& .MuiInputBase-root': { fontSize: '0.875rem' },
+                '& .MuiInputLabel-root': { fontSize: '0.875rem' },
+                '& .MuiInputBase-input': { padding: '6px 12px' }
+              }}
               size="small"
             />
-
             {errors.submit && (
               <Alert severity="error">{errors.submit}</Alert>
             )}
-
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 1, mb: 0 }}>
               <Button
                 variant="outlined"
                 onClick={handleCancelEdit}
                 disabled={saving}
-                fullWidth
                 size="small"
                 sx={{ fontSize: '0.7rem', py: 0.4, px: 1.2 }}
               >
@@ -277,7 +292,6 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
                 variant="contained"
                 onClick={handleSubmit}
                 disabled={saving}
-                fullWidth
                 size="small"
                 sx={{
                   fontSize: '0.7rem',
@@ -289,7 +303,7 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
                   border: '1px solid #90caf9',
                 }}
               >
-                Save
+                {saving ? 'Saving...' : 'Save'}
               </Button>
             </Box>
           </Stack>
@@ -394,7 +408,6 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
             </Typography>
             <Button
               variant="contained"
-              startIcon={<AddIcon />}
               fullWidth
               size="small"
               onClick={() => setShowAccommodationForm(true)}
@@ -430,23 +443,34 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
 
             {showAccommodationForm && (
               <Box ref={accommodationFormRef} sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
-                <AccommodationForm
-                  tripPointId={tripPoint.tripPointId}
-                  onCancel={() => setShowAccommodationForm(false)}
-                  onSuccess={(newAccommodation) => {
-                    const updatedAccommodations = [...accommodations, newAccommodation];
-                    setAccommodations(updatedAccommodations);
-                    
-                    // Update trip point with new accommodation
-                    const updatedTripPoint = {
-                      ...tripPoint,
-                      accommodations: updatedAccommodations,
-                    };
-                    onEdit(updatedTripPoint);
-                    
-                    setShowAccommodationForm(false);
-                  }}
-                />
+                {(() => {
+                  // Find the latest accommodation by checkOutDate (ISO string)
+                  let latestCheckOut = undefined;
+                  if (accommodations.length > 0) {
+                    latestCheckOut = accommodations
+                      .filter(a => a.checkOutDate)
+                      .sort((a, b) => new Date(b.checkOutDate).getTime() - new Date(a.checkOutDate).getTime())[0]?.checkOutDate;
+                  }
+                  return (
+                    <AccommodationForm
+                      tripPointId={tripPoint.tripPointId}
+                      tripPointArrivalDate={latestCheckOut || tripPoint.arrivalDate}
+                      tripPointDepartureDate={tripPoint.departureDate}
+                      onCancel={() => setShowAccommodationForm(false)}
+                      onSuccess={(newAccommodation) => {
+                        const updatedAccommodations = [...accommodations, newAccommodation];
+                        setAccommodations(updatedAccommodations);
+                        // Update trip point with new accommodation
+                        const updatedTripPoint = {
+                          ...tripPoint,
+                          accommodations: updatedAccommodations,
+                        };
+                        onEdit(updatedTripPoint);
+                        setShowAccommodationForm(false);
+                      }}
+                    />
+                  );
+                })()}
               </Box>
             )}
           </Box>
@@ -456,6 +480,26 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
               <Typography variant="body1" sx={{ fontWeight: 600 }}>
                 Routes
               </Typography>
+              {hasNextPoint && !showRouteForm && (
+                <Button
+                  variant="contained"
+                  fullWidth
+                  size="small"
+                  onClick={() => setShowRouteForm(true)}
+                  sx={{
+                    fontSize: '0.7rem',
+                    py: 0.4,
+                    px: 1.2,
+                    mb: 2,
+                    backgroundColor: '#e3f2fd',
+                    color: '#1976d2',
+                    '&:hover': { backgroundColor: '#bbdefb' },
+                    border: '1px solid #90caf9',
+                  }}
+                >
+                  Add Route
+                </Button>
+              )}
               {routes.map((route) => (
                 <RouteSummary
                   key={route.routeId}
@@ -505,28 +549,14 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
           </Box>
         )}
 
-        <Box sx={{ display: 'flex', gap: 1, pt: 2, borderTop: 1, borderColor: 'divider' }}>
-          <Button
-            variant="contained"
-            size="small"
-            onClick={onAddNextPoint}
-            sx={{
-              fontSize: '0.7rem',
-              py: 0.4,
-              px: 1.2,
-              backgroundColor: '#e3f2fd',
-              color: '#1976d2',
-              '&:hover': { backgroundColor: '#bbdefb' },
-              border: '1px solid #90caf9',
-            }}
-          >
-            Add next point
-          </Button>
-          {hasNextPoint && !showRouteForm && (
+        <Box sx={{ display: 'flex', pt: 2, borderTop: 1, borderColor: 'divider' }}>
+          {renderAddNextPointButton ? (
+            renderAddNextPointButton()
+          ) : (
             <Button
               variant="contained"
               size="small"
-              onClick={() => setShowRouteForm(true)}
+              onClick={onAddNextPoint}
               sx={{
                 fontSize: '0.7rem',
                 py: 0.4,
@@ -535,9 +565,11 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
                 color: '#1976d2',
                 '&:hover': { backgroundColor: '#bbdefb' },
                 border: '1px solid #90caf9',
+                minWidth: 0,
+                flex: 1,
               }}
             >
-              Add Route
+              Add Trip Point
             </Button>
           )}
         </Box>

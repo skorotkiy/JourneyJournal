@@ -12,19 +12,22 @@ import {
 import type { Accommodation } from '../types/trip';
 import { AccommodationType, AccommodationStatus } from '../types/trip';
 
+
 interface AccommodationFormProps {
   tripPointId: number;
+  tripPointArrivalDate?: string;
+  tripPointDepartureDate?: string;
   onCancel: () => void;
   onSuccess: (accommodation: Accommodation) => void;
 }
 
-const AccommodationForm = ({ tripPointId, onCancel, onSuccess }: AccommodationFormProps) => {
+const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartureDate, onCancel, onSuccess }: AccommodationFormProps) => {
   const [formData, setFormData] = useState({
     name: '',
     accommodationType: AccommodationType.Hotel,
     address: '',
-    checkInDate: '',
-    checkOutDate: '',
+    checkInDate: tripPointArrivalDate ? tripPointArrivalDate.split('T')[0] : '',
+    checkOutDate: tripPointDepartureDate ? tripPointDepartureDate.split('T')[0] : '',
     websiteUrl: '',
     cost: '',
     status: AccommodationStatus.Planned,
@@ -304,7 +307,7 @@ const AccommodationForm = ({ tripPointId, onCancel, onSuccess }: AccommodationFo
             <Alert severity="error">{errors.submit}</Alert>
           )}
 
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2, pb: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2, mb: 2 }}>
             <Button
               variant="outlined"
               onClick={onCancel}

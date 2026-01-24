@@ -468,7 +468,6 @@ const TripsPage = () => {
       {!isEditing && showTripPointForm && trip && (
         <TripPointForm
           tripId={trip.tripId}
-          nextOrder={(trip.tripPoints?.length || 0) + createdTripPoints.length}
           onCancel={() => setShowTripPointForm(false)}
           onSuccess={(newTripPoint) => {
             setCreatedTripPoints(prev => [...prev, newTripPoint]);
@@ -504,7 +503,6 @@ const TripsPage = () => {
               {addAfterPointId === tripPoint.tripPointId && trip && (
                 <TripPointForm
                   tripId={trip.tripId}
-                  nextOrder={(trip.tripPoints?.length || 0) + createdTripPoints.length}
                   onCancel={() => setAddAfterPointId(null)}
                   onSuccess={(newTripPoint) => {
                     setCreatedTripPoints(prev => [...prev, newTripPoint]);

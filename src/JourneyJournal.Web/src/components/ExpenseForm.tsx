@@ -1,26 +1,25 @@
 import { useState } from 'react';
 import {
   Box,
-  Typography,
   TextField,
   Button,
   Stack,
   Alert,
   MenuItem,
 } from '@mui/material';
+
 import type { Expense, CreateExpenseRequest } from '../types/expense';
 import { ExpenseCategory, PaymentMethod } from '../types/expense';
 import { expenseService } from '../services/expenseService';
 
 interface ExpenseFormProps {
   tripId: number;
-  tripName?: string;
   onCancel: () => void;
   onSuccess: (expense: Expense) => void;
   initialData?: Expense;
 }
 
-const ExpenseForm = ({ tripId, tripName, onCancel, onSuccess, initialData }: ExpenseFormProps) => {
+const ExpenseForm = ({ tripId, onCancel, onSuccess, initialData }: ExpenseFormProps) => {
   const [formData, setFormData] = useState({
     description: initialData?.description || '',
     category: initialData?.category || ExpenseCategory.Other,
@@ -237,7 +236,7 @@ const ExpenseForm = ({ tripId, tripName, onCancel, onSuccess, initialData }: Exp
             <Alert severity="error" sx={{ fontSize: '0.75rem' }}>{errors.submit}</Alert>
           )}
 
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2, pb: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2 }}>
             <Button
               variant="outlined"
               onClick={onCancel}
