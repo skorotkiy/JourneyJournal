@@ -7,6 +7,16 @@ import {
   Alert,
   MenuItem,
 } from '@mui/material';
+import {
+  textFieldSx,
+  selectFieldSx,
+  dateFieldSx,
+  amountFieldSx,
+  paymentFieldSx,
+  notesFieldSx,
+  buttonOutlinedSx,
+  buttonContainedSx,
+} from '../styles/formStyles';
 
 import type { Expense, CreateExpenseRequest } from '../types/expense';
 import { ExpenseCategory, PaymentMethod } from '../types/expense';
@@ -202,12 +212,7 @@ const ExpenseForm = ({ tripId, onCancel, onSuccess, initialData }: ExpenseFormPr
               name="paymentMethod"
               value={formData.paymentMethod}
               onChange={handleChange}
-              sx={{ 
-                width: '110px',
-                '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiSelect-select': { padding: '4px 10px' }
-              }}
+              sx={paymentFieldSx}
               size="small"
             >
               <MenuItem value={PaymentMethod.Cash}>Cash</MenuItem>
@@ -224,11 +229,7 @@ const ExpenseForm = ({ tripId, onCancel, onSuccess, initialData }: ExpenseFormPr
             rows={3}
             inputProps={{ maxLength: 200 }}
             helperText={`${formData.notes.length}/200 characters`}
-            sx={{ 
-              '& .MuiInputBase-root': { fontSize: '0.75rem' },
-              '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-              '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
-            }}
+            sx={notesFieldSx}
             size="small"
           />
 
@@ -242,7 +243,7 @@ const ExpenseForm = ({ tripId, onCancel, onSuccess, initialData }: ExpenseFormPr
               onClick={onCancel}
               disabled={loading}
               size="small"
-              sx={{ fontSize: '0.7rem', py: 0.4, px: 1.2 }}
+              sx={buttonOutlinedSx}
             >
               Cancel
             </Button>
@@ -251,15 +252,7 @@ const ExpenseForm = ({ tripId, onCancel, onSuccess, initialData }: ExpenseFormPr
               type="submit"
               disabled={loading}
               size="small"
-              sx={{
-                fontSize: '0.7rem',
-                py: 0.4,
-                px: 1.2,
-                backgroundColor: '#e3f2fd',
-                color: '#1976d2',
-                '&:hover': { backgroundColor: '#bbdefb' },
-                border: '1px solid #90caf9',
-              }}
+              sx={buttonContainedSx}
             >
               {loading ? 'Saving...' : 'Save'}
             </Button>

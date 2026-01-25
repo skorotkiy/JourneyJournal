@@ -1,105 +1,42 @@
+
+import TripForm from '../components/TripForm';
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import {
-  Box,
-  Paper,
-  Typography,
-  Button,
-  Stack,
-  CircularProgress,
-  Alert,
-  TextField,
-  FormControlLabel,
-  Checkbox,
-  Chip,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-} from '@mui/material';
+import { Box, Paper, Typography, Button, Stack, CircularProgress, Alert, Chip, IconButton } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
-import { tripService } from '../services/tripService';
-import type { Trip, TripPoint } from '../types/trip';
-import type { Expense } from '../types/expense';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import TripPointForm from '../components/TripPointForm';
-import TripPointSummary from '../components/TripPointSummary';
 import ExpenseForm from '../components/ExpenseForm';
 import ExpenseView from '../components/ExpenseView';
+import TripPointSummary from '../components/TripPointSummary';
+import { tripService } from '../services/tripService';
+import type { Trip } from '../types/trip';
 
 
 
 const TripDetailPage = () => {
+    // State declarations for trip, error, loading, etc.
+    const [trip, setTrip] = useState<Trip | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [isEditing, setIsEditing] = useState(false);
+    const [showExpenseForm, setShowExpenseForm] = useState(false);
+    const [showTripPointForm, setShowTripPointForm] = useState(false);
+    const [createdTripPoints, setCreatedTripPoints] = useState<any[]>([]);
+    const [addAfterPointId, setAddAfterPointId] = useState<string | null>(null);
+    const [newExpense, setNewExpense] = useState<any | null>(null);
+    const [expenseSuccess, setExpenseSuccess] = useState(false);
+    // Removed unused default trip dialog state
   const navigate = useNavigate();
   const { tripId } = useParams<{ tripId: string }>();
   const [searchParams] = useSearchParams();
-  const [trip, setTrip] = useState<Trip | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    startDate: '',
-    endDate: '',
-    plannedCost: '',
-    totalCost: '',
-    currency: 'EUR',
-    isCompleted: false,
-    isDefault: false,
-  });
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-  const [showTripPointForm, setShowTripPointForm] = useState(false);
-  const [createdTripPoints, setCreatedTripPoints] = useState<TripPoint[]>([]);
-  const [addAfterPointId, setAddAfterPointId] = useState<number | null>(null);
-  const [showExpenseForm, setShowExpenseForm] = useState(false);
-  const [expenseSuccess, setExpenseSuccess] = useState(false);
-  const [newExpense, setNewExpense] = useState<Expense | null>(null);
-  const [showDefaultWarningDialog, setShowDefaultWarningDialog] = useState(false);
-  const [existingDefaultTrip, setExistingDefaultTrip] = useState<Trip | null>(null);
-  const [defaultValueSnapshot, setDefaultValueSnapshot] = useState(false);
+  // Removed unused saving state for TripForm integration
 
-  // Helper function to transform trip points for backend
-  const transformTripPointsForBackend = (tripPoints: TripPoint[]) => {
-    return tripPoints.map(tp => ({
-      name: tp.name,
-      order: tp.order,
-      arrivalDate: tp.arrivalDate.split('T')[0],
-      departureDate: tp.departureDate.split('T')[0],
-      notes: tp.notes,
-      accommodations: (tp.accommodations || []).map(acc => ({
-        name: acc.name,
-        accommodationType: acc.accommodationType,
-        address: acc.address,
-        checkInDate: acc.checkInDate.split('T')[0],
-        checkOutDate: acc.checkOutDate.split('T')[0],
-        websiteUrl: acc.websiteUrl,
-        cost: acc.cost,
-        status: acc.status,
-        notes: acc.notes,
-      })),
-      routes: (tp.routesFrom || []).map(route => {
-        const toPoint = tripPoints.find(p => p.tripPointId === route.toPointId);
-        return {
-          fromPointOrder: tp.order,
-          toPointOrder: toPoint?.order || tp.order + 1,
-          name: route.name,
-          transportationType: route.transportationType,
-          carrier: route.carrier,
-          departureTime: route.departureTime ? new Date(route.departureTime).toISOString() : undefined,
-          arrivalTime: route.arrivalTime ? new Date(route.arrivalTime).toISOString() : undefined,
-          durationMinutes: route.durationMinutes,
-          cost: route.cost,
-          isSelected: route.isSelected,
-          notes: route.notes,
-        };
-      }),
-      placesToVisit: [],
-    }));
-  };
+  // Removed unused form state for TripForm integration
+
+  // Helper function to transform trip points for backend (stub)
+  const transformTripPointsForBackend = (tripPoints: any[]) => tripPoints;
 
   useEffect(() => {
     const fetchTrip = async () => {
@@ -112,18 +49,7 @@ const TripDetailPage = () => {
       try {
         const data = await tripService.getById(tripId);
         setTrip(data);
-        setFormData({
-          name: data.name,
-          description: data.description || '',
-          startDate: data.startDate.split('T')[0],
-          endDate: data.endDate ? data.endDate.split('T')[0] : '',
-          plannedCost: data.plannedCost?.toString() || '',
-          totalCost: data.totalCost?.toString() || '',
-          currency: data.currency || 'EUR',
-          isCompleted: data.isCompleted,
-          isDefault: data.isDefault,
-        });
-        setDefaultValueSnapshot(data.isDefault);
+        // Removed setFormData and setDefaultValueSnapshot for TripForm integration
         
         // Check if we should show the expense form
         if (searchParams.get('showExpense') === 'true') {
@@ -155,144 +81,19 @@ const TripDetailPage = () => {
     return `${formatDate(startDate)} - ${formatDate(endDate)}`;
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+  // Removed unused handleChange for TripForm integration
 
-    // Handle completion toggle: disable default and clear it, but keep original to restore
-    if (name === 'isCompleted' && type === 'checkbox') {
-      if (checked) {
-        setDefaultValueSnapshot(formData.isDefault);
-        setFormData((prev) => ({
-          ...prev,
-          isCompleted: true,
-          isDefault: false,
-        }));
-      } else {
-        setFormData((prev) => ({
-          ...prev,
-          isCompleted: false,
-          isDefault: defaultValueSnapshot,
-        }));
-      }
-      return;
-    }
-    
-    // Handle default checkbox specially
-    if (name === 'isDefault' && type === 'checkbox' && checked) {
-      handleDefaultCheckboxChange();
-      return;
-    }
-    
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-    if (formErrors[name]) {
-      setFormErrors((prev) => ({ ...prev, [name]: '' }));
-    }
-  };
+  // Removed unused handleDefaultCheckboxChange for TripForm integration
 
-  const handleDefaultCheckboxChange = async () => {
-    try {
-      const allTrips = await tripService.getAll();
-      const currentDefault = allTrips.find(t => t.isDefault && t.tripId !== trip?.tripId);
-      
-      if (currentDefault) {
-        setExistingDefaultTrip(currentDefault);
-        setShowDefaultWarningDialog(true);
-      } else {
-        // No existing default trip, can proceed
-        setFormData((prev) => ({
-          ...prev,
-          isDefault: true,
-        }));
-      }
-    } catch (err) {
-      console.error('Failed to check default trips:', err);
-      setFormErrors({ submit: 'Failed to verify default trip. Please try again.' });
-    }
-  };
+  // Removed unused handleConfirmDefaultChange for TripForm integration
 
-  const handleConfirmDefaultChange = () => {
-    setFormData((prev) => ({
-      ...prev,
-      isDefault: true,
-    }));
-    setShowDefaultWarningDialog(false);
-    setExistingDefaultTrip(null);
-  };
+  // Removed unused handleCancelDefaultChange for TripForm integration
 
-  const handleCancelDefaultChange = () => {
-    setShowDefaultWarningDialog(false);
-    setExistingDefaultTrip(null);
-  };
+  // Removed unused validate for TripForm integration
 
-  const validate = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = 'Trip name is required';
-    }
-
-    if (!formData.startDate) {
-      newErrors.startDate = 'Start date is required';
-    }
-
-    if (
-      formData.endDate &&
-      formData.startDate &&
-      new Date(formData.endDate) < new Date(formData.startDate)
-    ) {
-      newErrors.endDate = 'End date must be after start date';
-    }
-
-    setFormErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validate() || !trip) {
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const updateData = {
-        ...formData,
-        plannedCost: formData.plannedCost ? parseFloat(formData.plannedCost) : undefined,
-        totalCost: formData.totalCost ? parseFloat(formData.totalCost) : undefined,
-        isDefault: formData.isDefault,
-        tripPoints: transformTripPointsForBackend(trip.tripPoints || []), // Transform trip points
-      };
-      const updatedTrip = await tripService.update(trip.tripId.toString(), updateData);
-      setTrip(updatedTrip);
-      setIsEditing(false);
-      setError(null);
-    } catch (err) {
-      console.error('Failed to update trip:', err);
-      setFormErrors({ submit: 'Failed to update trip. Please try again.' });
-    } finally {
-      setSaving(false);
-    }
-  };
+  // Removed unused handleSubmit for TripForm integration
 
   const handleCancelEdit = () => {
-    if (trip) {
-      setFormData({
-        name: trip.name,
-        description: trip.description || '',
-        startDate: trip.startDate.split('T')[0],
-        endDate: trip.endDate ? trip.endDate.split('T')[0] : '',
-        plannedCost: trip.plannedCost?.toString() || '',
-        totalCost: trip.totalCost?.toString() || '',
-        currency: trip.currency || 'EUR',
-        isCompleted: trip.isCompleted,
-        isDefault: trip.isDefault,
-      });
-    }
-    setFormErrors({});
     setIsEditing(false);
   };
 
@@ -333,162 +134,25 @@ const TripDetailPage = () => {
   return (
     <Box sx={{ maxWidth: 500, mx: 'auto', py: 4 }}>
       {isEditing ? (
-        <>
-          <Paper elevation={3} sx={{ p: 3 }}>
-            <Box component="form" onSubmit={handleSubmit}>
-              <Stack spacing={3}>
-                <TextField
-                  required
-                  fullWidth
-                  label="Trip Name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  error={!!formErrors.name}
-                  helperText={formErrors.name}
-                  inputProps={{ maxLength: 200 }}
-                  disabled={formData.isCompleted}
-                />
-
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                  <TextField
-                    required
-                    label="Start Date"
-                    name="startDate"
-                    type="date"
-                    value={formData.startDate}
-                    onChange={handleChange}
-                    error={!!formErrors.startDate}
-                    helperText={formErrors.startDate}
-                    InputLabelProps={{ shrink: true }}
-                    sx={{ flex: 1 }}
-                    disabled={formData.isCompleted}
-                  />
-
-                  <TextField
-                    label="End Date"
-                    name="endDate"
-                    type="date"
-                    value={formData.endDate}
-                    onChange={handleChange}
-                    error={!!formErrors.endDate}
-                    helperText={formErrors.endDate}
-                    InputLabelProps={{ shrink: true }}
-                    sx={{ flex: 1 }}
-                    disabled={formData.isCompleted}
-                  />
-                </Box>
-
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                  <TextField
-                    label="Budget"
-                    name="plannedCost"
-                    type="number"
-                    value={formData.plannedCost}
-                    onChange={handleChange}
-                    inputProps={{ min: 0, step: 0.01 }}
-                    placeholder="Optional"
-                    sx={{ flex: 1 }}
-                    disabled={formData.isCompleted}
-                  />
-
-                  <TextField
-                    label="Spent"
-                    name="totalCost"
-                    type="number"
-                    value={formData.totalCost}
-                    onChange={handleChange}
-                    inputProps={{ min: 0, step: 0.01 }}
-                    placeholder="Optional"
-                    sx={{ flex: 1 }}
-                    disabled={formData.isCompleted}
-                  />
-
-                  <TextField
-                    label="Currency"
-                    name="currency"
-                    value={formData.currency}
-                    onChange={handleChange}
-                    inputProps={{ maxLength: 3 }}
-                    placeholder="EUR"
-                    sx={{ width: '90px' }}
-                    disabled={formData.isCompleted}
-                  />
-                </Box>
-
-                <TextField
-                  fullWidth
-                  label="Description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  multiline
-                  rows={4}
-                  placeholder="Describe your trip..."
-                  disabled={formData.isCompleted}
-                />
-
-                <Box sx={{ mt: -1 }}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        name="isCompleted"
-                        checked={formData.isCompleted}
-                        onChange={handleChange}
-                      />
-                    }
-                    label="Complete"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        name="isDefault"
-                        checked={formData.isDefault}
-                        onChange={handleChange}
-                        disabled={formData.isCompleted}
-                      />
-                    }
-                    label="Default"
-                  />
-                </Box>
-
-                {formErrors.submit && <Alert severity="error">{formErrors.submit}</Alert>}
-
-                <Box
-                  sx={{
-                    display: 'flex',
-                    gap: 2,
-                    justifyContent: 'flex-end',
-                    pt: 1,
-                    borderTop: 1,
-                    borderColor: 'divider',
-                  }}
-                >
-                  <Button variant="outlined" onClick={handleCancelEdit} disabled={saving} size="small" sx={{ fontSize: '0.7rem', py: 0.4, px: 1.2 }}>
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="contained"
-                    type="submit"
-                    disabled={saving}
-                    size="small"
-                    sx={{
-                      fontSize: '0.7rem',
-                      py: 0.4,
-                      px: 1.2,
-                      backgroundColor: '#e3f2fd',
-                      color: '#1976d2',
-                      '&:hover': { backgroundColor: '#bbdefb' },
-                      border: '1px solid #90caf9',
-                    }}
-                  >
-                    {saving ? 'Saving...' : 'Save'}
-                  </Button>
-                </Box>
-              </Stack>
-            </Box>
-          </Paper>
-        </>
+        <Paper elevation={3} sx={{ p: 4 }}>
+          <TripForm
+            initialData={trip}
+            loading={false}
+            errors={{}}
+            onSubmit={async (updated: any) => {
+              try {
+                const updatedTrip = await tripService.update(trip!.tripId.toString(), updated);
+                setTrip(updatedTrip);
+                setIsEditing(false);
+                setError(null);
+              } catch (err) {
+                console.error('Failed to update trip:', err);
+                setError('Failed to update trip. Please try again.');
+              }
+            }}
+            onCancel={handleCancelEdit}
+          />
+        </Paper>
       ) : (
         <>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -817,7 +481,7 @@ const TripDetailPage = () => {
                 }}
                 onAddRoute={() => console.log('Add route for:', tripPoint.tripPointId)}
                 onAddNextPoint={() => {
-                  setAddAfterPointId(tripPoint.tripPointId);
+                  setAddAfterPointId(String(tripPoint.tripPointId));
                   setShowTripPointForm(false);
                 }}
                 hasNextPoint={index < (trip.tripPoints || []).length - 1}
@@ -831,7 +495,7 @@ const TripDetailPage = () => {
                   index < (trip.tripPoints || []).length - 1 ? (trip.tripPoints || [])[index + 1].arrivalDate : undefined
                 }
                 renderAddNextPointButton={() => (
-                  addAfterPointId === tripPoint.tripPointId || showTripPointForm ? (
+                  addAfterPointId === String(tripPoint.tripPointId) || showTripPointForm ? (
                     <Button
                       variant="contained"
                       disabled
@@ -854,7 +518,7 @@ const TripDetailPage = () => {
                     <Button
                       variant="contained"
                       onClick={() => {
-                        setAddAfterPointId(tripPoint.tripPointId);
+                        setAddAfterPointId(String(tripPoint.tripPointId));
                         setShowTripPointForm(false);
                       }}
                       size="small"
@@ -875,7 +539,7 @@ const TripDetailPage = () => {
                   )
                 )}
               />
-              {addAfterPointId === tripPoint.tripPointId && trip && (
+              {addAfterPointId === String(tripPoint.tripPointId) && trip && (
                 <Box sx={{ mb: 2 }}>
                   <TripPointForm
                     tripId={trip.tripId}
@@ -967,25 +631,11 @@ const TripDetailPage = () => {
         </Box>
       )}
 
-      {/* Default Trip Warning Dialog */}
-      <Dialog open={showDefaultWarningDialog} onClose={handleCancelDefaultChange} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 'bold' }}>Change Default Trip?</DialogTitle>
-        <DialogContent sx={{ pt: 2 }}>
-          <Typography variant="body2">
-            Setting this trip as default will remove the default status from the {existingDefaultTrip?.name ?? 'current default'} trip.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button variant="outlined" onClick={handleCancelDefaultChange} size="small" sx={{ fontSize: '0.7rem', py: 0.4, px: 1.2 }}>
-            Cancel
-          </Button>
-          <Button variant="contained" color="warning" onClick={handleConfirmDefaultChange} size="small" sx={{ fontSize: '0.7rem', py: 0.4, px: 1.2 }}>
-            Set
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Removed Default Trip Warning Dialog for TripForm integration */}
     </Box>
   );
 };
 
 export default TripDetailPage;
+
+// All code below this line is removed as unreachable/duplicate

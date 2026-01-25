@@ -10,7 +10,6 @@ import {
   FormControlLabel,
   Checkbox,
   Paper,
-  Divider,
 } from '@mui/material';
 import type { Route } from '../types/trip';
 import { TransportationType } from '../types/trip';

@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import TripListPage from './pages/TripListPage';
 import TripsPage from './pages/TripsPage';
 import TripDetailPage from './pages/TripDetailPage';
+import CreateTripPage from './pages/CreateTripPage';
 import ExpensesPage from './pages/ExpensesPage';
 import EditExpensePage from './pages/EditExpensePage';
 
@@ -30,7 +31,7 @@ function App() {
             <Route path="trips" element={<TripListPage />} />
             <Route path="trips/view" element={<TripsPage />} />
             <Route path="trips/:tripId" element={<TripDetailPage />} />
-            <Route path="trips/create" element={<TripsPage />} />
+            <Route path="trips/create" element={<CreateTripPage />} />
             <Route path="expenses" element={<ExpensesPage />} />
             <Route path="expenses/create" element={<ExpensesPage />} />
             <Route path="trips/:tripId/expenses/:expenseId/edit" element={<EditExpensePage />} />
