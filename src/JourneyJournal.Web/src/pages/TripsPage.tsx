@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import {
   Box,
   Paper,
@@ -10,47 +10,79 @@ import {
   CircularProgress,
   Alert,
   TextField,
+  FormControlLabel,
+  Checkbox,
 } from '@mui/material';
 import { tripService } from '../services/tripService';
 import type { Trip, TripPoint } from '../types/trip';
 import TripPointForm from '../components/TripPointForm';
 import TripPointSummary from '../components/TripPointSummary';
 
+
 const TripsPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const params = useParams<{ tripId?: string }>();
+  const isCreateMode = window.location.pathname === '/trips/create';
   const [trip, setTrip] = useState<Trip | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(isCreateMode);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     startDate: '',
     endDate: '',
+    plannedCost: '',
     totalCost: '',
     currency: 'EUR',
+    isDefault: false,
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [showTripPointForm, setShowTripPointForm] = useState(false);
   const [createdTripPoints, setCreatedTripPoints] = useState<TripPoint[]>([]);
   const [addAfterPointId, setAddAfterPointId] = useState<number | null>(null);
 
+
   useEffect(() => {
     const fetchTrip = async () => {
+      if (isCreateMode) {
+        setTrip(null);
+        setFormData({
+          name: '',
+          description: '',
+          startDate: '',
+          endDate: '',
+          plannedCost: '',
+          totalCost: '',
+          currency: 'EUR',
+          isDefault: false,
+        });
+        setLoading(false);
+        return;
+      }
       try {
-        const trips = await tripService.getAll();
-        if (trips.length > 0) {
-          // Find the default trip, otherwise use the first trip
-          const currentTrip = trips.find(t => t.isDefault) || trips[0];
-          setTrip(currentTrip);
+        let tripData: Trip | null = null;
+        if (params.tripId) {
+          tripData = await tripService.getById(params.tripId);
+        } else {
+          const trips = await tripService.getAll();
+          if (trips.length > 0) {
+            tripData = trips.find(t => t.isDefault) || trips[0];
+          }
+        }
+        if (tripData) {
+          setTrip(tripData);
           setFormData({
-            name: currentTrip.name,
-            description: currentTrip.description || '',
-            startDate: currentTrip.startDate.split('T')[0],
-            endDate: currentTrip.endDate ? currentTrip.endDate.split('T')[0] : '',
-            totalCost: currentTrip.totalCost?.toString() || '',
-            currency: currentTrip.currency || 'EUR',
+            name: tripData.name,
+            description: tripData.description || '',
+            startDate: tripData.startDate.split('T')[0],
+            endDate: tripData.endDate ? tripData.endDate.split('T')[0] : '',
+            plannedCost: tripData.plannedCost?.toString() || '',
+            totalCost: tripData.totalCost?.toString() || '',
+            currency: tripData.currency || 'EUR',
+            isDefault: tripData.isDefault,
           });
         }
       } catch (err) {
@@ -60,20 +92,9 @@ const TripsPage = () => {
         setLoading(false);
       }
     };
-
-    // Refetch when the route is focused (componentDidMount + visibility)
     fetchTrip();
-    
-    // Set up interval to refresh the trip data when returning to this page
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        fetchTrip();
-      }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, []);
+    // eslint-disable-next-line
+  }, [isCreateMode, params.tripId]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -120,40 +141,59 @@ const TripsPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validate() || !trip) {
+    if (!validate()) {
       return;
     }
-
     setSaving(true);
     try {
-      const updateData = {
-        ...formData,
-        totalCost: formData.totalCost ? parseFloat(formData.totalCost) : undefined,
-      };
-      const updatedTrip = await tripService.update(trip.tripId.toString(), updateData);
-      setTrip(updatedTrip);
-      setIsEditing(false);
-      setError(null);
+      if (isCreateMode) {
+        const tripData = {
+          ...formData,
+          plannedCost: formData.plannedCost ? parseFloat(formData.plannedCost) : undefined,
+          totalCost: formData.totalCost ? parseFloat(formData.totalCost) : undefined,
+        };
+        const newTrip = await tripService.create(tripData);
+        setTrip(newTrip);
+        setIsEditing(false);
+        setError(null);
+        navigate('/trips');
+      } else if (trip) {
+        const updateData = {
+          ...formData,
+          plannedCost: formData.plannedCost ? parseFloat(formData.plannedCost) : undefined,
+          totalCost: formData.totalCost ? parseFloat(formData.totalCost) : undefined,
+        };
+        const updatedTrip = await tripService.update(trip.tripId.toString(), updateData);
+        setTrip(updatedTrip);
+        setIsEditing(false);
+        setError(null);
+      }
     } catch (err) {
-      console.error('Failed to update trip:', err);
-      setFormErrors({ submit: 'Failed to update trip. Please try again.' });
+      console.error('Failed to save trip:', err);
+      setFormErrors({ submit: 'Failed to save trip. Please try again.' });
     } finally {
       setSaving(false);
     }
   };
 
   const handleCancelEdit = () => {
+    if (isCreateMode) {
+      navigate('/');
+      return;
+    }
     if (trip) {
       setFormData({
         name: trip.name,
         description: trip.description || '',
         startDate: trip.startDate.split('T')[0],
         endDate: trip.endDate ? trip.endDate.split('T')[0] : '',
+        plannedCost: trip.plannedCost?.toString() || '',
         totalCost: trip.totalCost?.toString() || '',
         currency: trip.currency || 'EUR',
+        isDefault: trip.isDefault,
       });
     }
     setFormErrors({});
@@ -196,7 +236,7 @@ const TripsPage = () => {
     );
   }
 
-  if (!trip) {
+  if (!trip && !isCreateMode) {
     return (
       <Box sx={{ py: 4 }}>
         <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
@@ -238,7 +278,7 @@ const TripsPage = () => {
           <>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h5" component="h1">
-                Edit Trip
+                {isCreateMode ? 'Create Trip' : 'Edit Trip'}
               </Typography>
               <Button 
                 variant="text" 
@@ -255,9 +295,7 @@ const TripsPage = () => {
                 Cancel
               </Button>
             </Box>
-            
             <Divider sx={{ mb: 3 }} />
-            
             <Box component="form" onSubmit={handleSubmit}>
               <Stack spacing={3}>
                 <TextField
@@ -271,7 +309,6 @@ const TripsPage = () => {
                   helperText={formErrors.name}
                   inputProps={{ maxLength: 200 }}
                 />
-
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <TextField
                     required
@@ -285,7 +322,6 @@ const TripsPage = () => {
                     InputLabelProps={{ shrink: true }}
                     sx={{ width: '180px' }}
                   />
-
                   <TextField
                     label="End Date"
                     name="endDate"
@@ -297,18 +333,26 @@ const TripsPage = () => {
                     InputLabelProps={{ shrink: true }}
                     sx={{ width: '180px' }}
                   />
-
                   <TextField
-                    label="Total Cost"
+                    label="Budget"
+                    name="plannedCost"
+                    type="number"
+                    value={formData.plannedCost}
+                    onChange={handleChange}
+                    inputProps={{ min: 0, step: 0.01 }}
+                    placeholder="Budget"
+                    sx={{ width: '120px' }}
+                  />
+                  <TextField
+                    label="Spent"
                     name="totalCost"
                     type="number"
                     value={formData.totalCost}
                     onChange={handleChange}
                     inputProps={{ min: 0, step: 0.01 }}
-                    placeholder="Optional"
-                    sx={{ width: '150px' }}
+                    placeholder="Actual"
+                    sx={{ width: '120px' }}
                   />
-
                   <TextField
                     label="Currency"
                     name="currency"
@@ -319,7 +363,6 @@ const TripsPage = () => {
                     sx={{ width: '100px' }}
                   />
                 </Box>
-
                 <TextField
                   fullWidth
                   label="Description"
@@ -330,11 +373,21 @@ const TripsPage = () => {
                   rows={4}
                   placeholder="Describe your trip..."
                 />
-
+                <Box sx={{ mt: -1 }}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        name="isDefault"
+                        checked={formData.isDefault}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, isDefault: e.target.checked }))}
+                      />
+                    }
+                    label="Default"
+                  />
+                </Box>
                 {formErrors.submit && (
                   <Alert severity="error">{formErrors.submit}</Alert>
                 )}
-
                 <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', pt: 1, borderTop: 1, borderColor: 'divider' }}>
                   <Button
                     variant="outlined"
@@ -370,7 +423,7 @@ const TripsPage = () => {
           <>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h5" component="h1">
-                {trip.name}
+                {trip ? trip.name : ''}
               </Typography>
               <Button 
                 variant="text" 
@@ -397,11 +450,11 @@ const TripsPage = () => {
                     Dates
                   </Typography>
                   <Typography variant="body2">
-                    {formatDateRange(trip.startDate, trip.endDate)}
+                    {trip ? formatDateRange(trip.startDate, trip.endDate) : ''}
                   </Typography>
                 </Box>
 
-                {trip.totalCost && (
+                {trip && trip.totalCost && (
                   <Box>
                     <Typography variant="caption" color="text.secondary" display="block">
                       Budget
@@ -417,12 +470,12 @@ const TripsPage = () => {
                     Status
                   </Typography>
                   <Typography variant="body2">
-                    {trip.isCompleted ? '✓ Completed' : '○ In Progress'}
+                    {trip ? (trip.isCompleted ? '✓ Completed' : '○ In Progress') : ''}
                   </Typography>
                 </Box>
               </Box>
 
-              {trip.description && (
+              {trip && trip.description && (
                 <Box>
                   <Typography variant="caption" color="text.secondary" display="block">
                     Description
@@ -434,7 +487,7 @@ const TripsPage = () => {
               )}
 
               <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between', pt: 1, borderTop: 1, borderColor: 'divider' }}>
-                {((trip.tripPoints?.length || 0) + createdTripPoints.length) === 0 && (
+                {(trip && ((trip.tripPoints?.length || 0) + createdTripPoints.length) === 0) && (
                   <Button
                     variant="outlined"
                     size="small"

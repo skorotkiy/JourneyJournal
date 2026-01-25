@@ -1,23 +1,15 @@
-import { Box, Typography, Button, Paper, IconButton } from '@mui/material';
+import { Box, Typography, Button, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 import ReceiptIcon from '@mui/icons-material/Receipt';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CloseIcon from '@mui/icons-material/Close';
 import { tripService } from '../services/tripService';
 import type { Trip } from '../types/trip';
-import type { Expense } from '../types/expense';
-import ExpenseForm from '../components/ExpenseForm';
-import ExpenseView from '../components/ExpenseView';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const [currentTrip, setCurrentTrip] = useState<Trip | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showExpenseForm, setShowExpenseForm] = useState(false);
-  const [expenseSuccess, setExpenseSuccess] = useState(false);
-  const [newExpense, setNewExpense] = useState<Expense | null>(null);
 
   useEffect(() => {
     const fetchCurrentTrip = async () => {
@@ -80,7 +72,7 @@ const HomePage = () => {
 
   return (
     <Box sx={{ textAlign: 'center', py: 8 }}>
-      {!showExpenseForm && !expenseSuccess && (
+
         <Box sx={{ mt: 6, display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center' }}>
           <Paper elevation={3} sx={{ p: 4, maxWidth: 300, width: '100%' }}>
             <FlightTakeoffIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
@@ -111,53 +103,6 @@ const HomePage = () => {
             </Button>
           </Paper>
         </Box>
-      )}
-
-      {showExpenseForm && !expenseSuccess && currentTrip && (
-        <>
-          <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, mt: 4, maxWidth: 800, mx: 'auto' }}>
-            Add expense to "{currentTrip.name}" trip
-          </Typography>
-          <Paper elevation={3} sx={{ p: 3, mt: 0, maxWidth: 800, mx: 'auto' }}>
-            <ExpenseForm
-              tripId={currentTrip.tripId}
-              tripName={currentTrip.name}
-              onCancel={() => setShowExpenseForm(false)}
-              onSuccess={(expense) => {
-                setNewExpense(expense);
-                setExpenseSuccess(true);
-                setShowExpenseForm(false);
-              }}
-            />
-          </Paper>
-        </>
-      )}
-
-      {expenseSuccess && newExpense && currentTrip && (
-        <Paper elevation={3} sx={{ p: 3, mt: 4, maxWidth: 800, mx: 'auto', bgcolor: 'success.light' }}>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-            <CheckCircleIcon color="success" sx={{ mt: 0.5 }} />
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="h6" color="success.dark" gutterBottom>
-                Expense Added Successfully!
-              </Typography>
-              <Typography variant="body2" color="success.dark" sx={{ mb: 2 }}>
-                Your expense "{newExpense.description}" has been added to {currentTrip.name}.
-              </Typography>
-              <ExpenseView expense={newExpense} currency={currentTrip.currency} tripId={currentTrip.tripId} />
-            </Box>
-            <IconButton
-              size="small"
-              onClick={() => {
-                setExpenseSuccess(false);
-                setNewExpense(null);
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </Paper>
-      )}
     </Box>
   );
 };

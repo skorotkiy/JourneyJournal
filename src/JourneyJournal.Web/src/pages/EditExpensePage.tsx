@@ -8,7 +8,6 @@ import {
   Alert,
   Button,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { tripService } from '../services/tripService';
 import type { Trip } from '../types/trip';
 import type { Expense } from '../types/expense';
