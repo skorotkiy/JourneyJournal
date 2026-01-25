@@ -9,6 +9,15 @@ import {
   Alert,
   MenuItem,
 } from '@mui/material';
+import {
+  textFieldSx,
+  selectFieldSx,
+  dateFieldSx,
+  amountFieldSx,
+  notesFieldSx,
+  buttonOutlinedSx,
+  buttonContainedSx,
+} from '../styles/formStyles';
 import type { Accommodation } from '../types/trip';
 import { AccommodationType, AccommodationStatus } from '../types/trip';
 
@@ -136,14 +145,7 @@ const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartu
               error={!!errors.name}
               helperText={errors.name}
               inputProps={{ maxLength: 200 }}
-              sx={{ 
-                flex: 1, 
-                minWidth: '200px',
-                '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiInputBase-input': { padding: '4px 10px' },
-                '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
-              }}
+              sx={textFieldSx}
               size="small"
             />
 
@@ -153,12 +155,7 @@ const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartu
               name="accommodationType"
               value={formData.accommodationType}
               onChange={handleChange}
-              sx={{ 
-                width: '150px',
-                '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiSelect-select': { padding: '4px 10px' }
-              }}
+              sx={selectFieldSx}
               size="small"
             >
               <MenuItem value={AccommodationType.Booking}>Booking</MenuItem>
@@ -180,13 +177,7 @@ const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartu
               error={!!errors.checkInDate}
               helperText={errors.checkInDate}
               InputLabelProps={{ shrink: true }}
-              sx={{ 
-                width: '180px',
-                '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiInputBase-input': { padding: '4px 10px' },
-                '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
-              }}
+              sx={dateFieldSx}
               size="small"
             />
 
@@ -200,13 +191,7 @@ const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartu
               error={!!errors.checkOutDate}
               helperText={errors.checkOutDate}
               InputLabelProps={{ shrink: true }}
-              sx={{ 
-                width: '180px',
-                '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiInputBase-input': { padding: '4px 10px' },
-                '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
-              }}
+              sx={dateFieldSx}
               size="small"
             />
           </Box>
@@ -222,13 +207,7 @@ const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartu
               error={!!errors.cost}
               helperText={errors.cost}
               inputProps={{ min: 0, step: 0.01 }}
-              sx={{ 
-                width: '120px',
-                '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiInputBase-input': { padding: '4px 10px' },
-                '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
-              }}
+              sx={amountFieldSx}
               size="small"
             />
 
@@ -238,12 +217,7 @@ const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartu
               name="status"
               value={formData.status}
               onChange={handleChange}
-              sx={{ 
-                width: '150px',
-                '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiSelect-select': { padding: '4px 10px' }
-              }}
+              sx={selectFieldSx}
               size="small"
             >
               <MenuItem value={AccommodationStatus.Planned}>Planned</MenuItem>
@@ -262,11 +236,7 @@ const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartu
             onChange={handleChange}
             inputProps={{ maxLength: 500 }}
             placeholder="Full address"
-            sx={{
-              '& .MuiInputBase-root': { fontSize: '0.75rem', minHeight: '32px' },
-              '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-              '& .MuiInputBase-input': { padding: '4px 10px' }
-            }}
+            sx={textFieldSx}
             size="small"
           />
 
@@ -277,11 +247,7 @@ const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartu
             value={formData.websiteUrl}
             onChange={handleChange}
             placeholder="https://..."
-            sx={{
-              '& .MuiInputBase-root': { fontSize: '0.75rem', minHeight: '32px' },
-              '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-              '& .MuiInputBase-input': { padding: '4px 10px' }
-            }}
+            sx={textFieldSx}
             size="small"
           />
 
@@ -295,11 +261,7 @@ const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartu
             minRows={1}
             maxRows={2}
             placeholder="Additional notes..."
-            sx={{
-              '& .MuiInputBase-root': { fontSize: '0.75rem' },
-              '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-              '& .MuiInputBase-input': { padding: '4px 10px' }
-            }}
+            sx={notesFieldSx}
             size="small"
           />
 
@@ -313,7 +275,7 @@ const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartu
               onClick={onCancel}
               disabled={loading}
               size="small"
-              sx={{ fontSize: '0.7rem', py: 0.4, px: 1.2 }}
+              sx={buttonOutlinedSx}
             >
               Cancel
             </Button>
@@ -322,15 +284,7 @@ const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartu
               type="submit"
               disabled={loading}
               size="small"
-              sx={{
-                fontSize: '0.7rem',
-                py: 0.4,
-                px: 1.2,
-                backgroundColor: '#e3f2fd',
-                color: '#1976d2',
-                '&:hover': { backgroundColor: '#bbdefb' },
-                border: '1px solid #90caf9',
-              }}
+              sx={buttonContainedSx}
             >
               {loading ? 'Saving...' : 'Save'}
             </Button>

@@ -30,6 +30,7 @@ const defaultFormData = {
   isDefault: false,
 };
 
+
 const TripForm: React.FC<TripFormProps> = ({
   initialData = {},
   loading = false,
@@ -38,6 +39,11 @@ const TripForm: React.FC<TripFormProps> = ({
   onCancel,
 }) => {
   const [formData, setFormData] = useState({ ...defaultFormData, ...initialData });
+
+  // Update formData when initialData changes (for edit mode)
+  React.useEffect(() => {
+    setFormData({ ...defaultFormData, ...initialData });
+  }, [JSON.stringify(initialData)]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -141,7 +147,7 @@ const TripForm: React.FC<TripFormProps> = ({
           size="small"
           sx={notesFieldSx}
         />
-        <Box sx={{ mt: -1 }}>
+        <Box sx={{ mt: -1, display: 'flex', gap: 2 }}>
           <FormControlLabel
             control={
               <Checkbox
@@ -152,6 +158,22 @@ const TripForm: React.FC<TripFormProps> = ({
               />
             }
             label="Default"
+            sx={{
+              '.MuiFormControlLabel-label': { fontSize: '0.85rem' },
+              alignItems: 'center',
+            }}
+            componentsProps={{ typography: { variant: 'body2' } }}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                name="isCompleted"
+                checked={!!formData.isCompleted}
+                onChange={handleChange}
+                size="small"
+              />
+            }
+            label="Completed"
             sx={{
               '.MuiFormControlLabel-label': { fontSize: '0.85rem' },
               alignItems: 'center',

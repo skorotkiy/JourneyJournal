@@ -136,7 +136,11 @@ const TripDetailPage = () => {
       {isEditing ? (
         <Paper elevation={3} sx={{ px: 4, pt: 2, pb: 2, mt: 2 }}>
           <TripForm
-            initialData={trip}
+            initialData={{
+              ...trip,
+              startDate: trip.startDate ? trip.startDate.split('T')[0] : '',
+              endDate: trip.endDate ? trip.endDate.split('T')[0] : '',
+            }}
             loading={false}
             errors={{}}
             onSubmit={async (updated: any) => {

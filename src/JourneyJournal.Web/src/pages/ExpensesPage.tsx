@@ -20,7 +20,6 @@ import { tripService } from '../services/tripService';
 import type { Trip } from '../types/trip';
 import type { Expense } from '../types/expense';
 import { ExpenseCategory, PaymentMethod } from '../types/expense';
-import ExpenseForm from '../components/ExpenseForm';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -47,7 +46,6 @@ const TabPanel = (props: TabPanelProps) => {
 const ExpensesPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const isCreateMode = window.location.pathname === '/expenses/create';
   const [currentTrip, setCurrentTrip] = useState<Trip | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -262,30 +260,6 @@ const ExpensesPage = () => {
     );
   }
 
-  // Show only the add expense form in create mode
-  if (isCreateMode) {
-    return (
-      <Box sx={{ maxWidth: 500, mx: 'auto', py: 4 }}>
-        <Paper elevation={3} sx={{ px: 4, pt: 2, pb: 2, mt: 2 }}>
-          <Typography
-            variant="subtitle1"
-            component="h1"
-            gutterBottom
-            sx={{ fontWeight: 600, color: '#1976d2', mb: 1, fontSize: '1.05rem' }}
-          >
-            {currentTrip ? `Add expense to ${currentTrip.name}` : 'Add Expense'}
-          </Typography>
-          <ExpenseForm
-            tripId={currentTrip.tripId}
-            onCancel={() => navigate('/')}
-            onSuccess={() => {
-              navigate('/');
-            }}
-          />
-        </Paper>
-      </Box>
-    );
-  }
 
   return (
     <Box sx={{ maxWidth: 500, mx: 'auto', py: 4 }}>
