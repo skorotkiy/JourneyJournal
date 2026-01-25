@@ -130,14 +130,7 @@ const ExpenseForm = ({ tripId, onCancel, onSuccess, initialData }: ExpenseFormPr
               error={!!errors.description}
               helperText={errors.description}
               inputProps={{ maxLength: 200 }}
-              sx={{ 
-                flex: 1, 
-                minWidth: '200px',
-                '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiInputBase-input': { padding: '4px 10px' },
-                '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
-              }}
+              sx={textFieldSx}
               size="small"
             />
 
@@ -147,12 +140,7 @@ const ExpenseForm = ({ tripId, onCancel, onSuccess, initialData }: ExpenseFormPr
               name="category"
               value={formData.category}
               onChange={handleChange}
-              sx={{ 
-                width: '150px',
-                '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiSelect-select': { padding: '4px 10px' }
-              }}
+              sx={selectFieldSx}
               size="small"
             >
               {Object.values(ExpenseCategory)
@@ -176,13 +164,7 @@ const ExpenseForm = ({ tripId, onCancel, onSuccess, initialData }: ExpenseFormPr
               error={!!errors.expenseDate}
               helperText={errors.expenseDate}
               InputLabelProps={{ shrink: true }}
-              sx={{ 
-                width: '150px',
-                '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiInputBase-input': { padding: '4px 10px' },
-                '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
-              }}
+              sx={dateFieldSx}
               size="small"
             />
 
@@ -196,13 +178,7 @@ const ExpenseForm = ({ tripId, onCancel, onSuccess, initialData }: ExpenseFormPr
               error={!!errors.amount}
               helperText={errors.amount}
               inputProps={{ min: 0, step: 0.01 }}
-              sx={{ 
-                width: '100px',
-                '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiInputBase-input': { padding: '4px 10px' },
-                '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
-              }}
+              sx={amountFieldSx}
               size="small"
             />
 

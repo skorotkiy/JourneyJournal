@@ -134,7 +134,7 @@ const TripDetailPage = () => {
   return (
     <Box sx={{ maxWidth: 500, mx: 'auto', py: 4 }}>
       {isEditing ? (
-        <Paper elevation={3} sx={{ p: 4 }}>
+        <Paper elevation={3} sx={{ px: 4, pt: 2, pb: 2, mt: 2 }}>
           <TripForm
             initialData={trip}
             loading={false}

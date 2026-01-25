@@ -53,7 +53,7 @@ const TripForm: React.FC<TripFormProps> = ({
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+    <Box component="form" onSubmit={handleSubmit}>
       <Stack spacing={2}>
         <TextField
           required
