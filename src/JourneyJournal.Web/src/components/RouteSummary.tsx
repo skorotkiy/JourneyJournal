@@ -34,8 +34,6 @@ const RouteSummary = ({ route, fromPointName, toPointName, onEdit, onRemove }: R
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  // Removed: saving state, handled by RouteForm if needed
-  // Remove local form state, RouteForm will handle it
 
   const getTransportTypeName = (type: TransportationType): string => {
     switch (type) {
@@ -101,11 +99,8 @@ const RouteSummary = ({ route, fromPointName, toPointName, onEdit, onRemove }: R
     setIsEditing(false);
   };
 
-  // Removed: handleChange, handled by RouteForm
 
-  // Removed: validate, handled by RouteForm
 
-  // Removed: handleSubmit, handled by RouteForm
 
   if (isEditing) {
     return (

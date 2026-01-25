@@ -5,21 +5,16 @@ import {
   Typography,
   Button,
   Stack,
-  Alert,
-  TextField,
-  MenuItem,
-  IconButton,
   Chip,
   Divider,
   Dialog,
   DialogTitle,
   DialogActions,
 } from '@mui/material';
+import AccommodationForm from './AccommodationForm';
 import {
   EditOutlined as EditIcon,
   DeleteOutline as DeleteIcon,
-  Close as CloseIcon,
-  Check as CheckIcon,
   EventOutlined as EventIcon,
   MonetizationOnOutlined as MoneyIcon,
 } from '@mui/icons-material';
@@ -36,19 +31,6 @@ const AccommodationSummary = ({ accommodation, onEdit, onRemove }: Accommodation
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState({
-    name: accommodation.name,
-    accommodationType: accommodation.accommodationType,
-    address: accommodation.address || '',
-    checkInDate: accommodation.checkInDate ? accommodation.checkInDate.split('T')[0] : '',
-    checkOutDate: accommodation.checkOutDate ? accommodation.checkOutDate.split('T')[0] : '',
-    websiteUrl: accommodation.websiteUrl || '',
-    cost: accommodation.cost?.toString() || '',
-    status: accommodation.status,
-    notes: accommodation.notes || '',
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const getAccommodationTypeName = (type: AccommodationType): string => {
     switch (type) {
@@ -129,304 +111,24 @@ const AccommodationSummary = ({ accommodation, onEdit, onRemove }: Accommodation
     }
   };
 
-  const handleEditClick = () => {
-    setIsEditing(true);
-  };
-
-  const handleCancelEdit = () => {
-    setFormData({
-      name: accommodation.name,
-      accommodationType: accommodation.accommodationType,
-      address: accommodation.address || '',
-      checkInDate: accommodation.checkInDate ? accommodation.checkInDate.split('T')[0] : '',
-      checkOutDate: accommodation.checkOutDate ? accommodation.checkOutDate.split('T')[0] : '',
-      websiteUrl: accommodation.websiteUrl || '',
-      cost: accommodation.cost?.toString() || '',
-      status: accommodation.status,
-      notes: accommodation.notes || '',
-    });
-    setErrors({});
+  const handleEditClick = () => setIsEditing(true);
+  const handleCancelEdit = () => setIsEditing(false);
+  const handleSuccessEdit = (updatedAccommodation: Accommodation) => {
+    onEdit(updatedAccommodation);
     setIsEditing(false);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'accommodationType' || name === 'status' ? parseInt(value) : value,
-    }));
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
-  };
-
-  const validate = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = 'Accommodation name is required';
-    }
-
-    if (formData.checkOutDate && formData.checkInDate && 
-        new Date(formData.checkOutDate) < new Date(formData.checkInDate)) {
-      newErrors.checkOutDate = 'Check-out date must be after check-in date';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validate()) {
-      return;
-    }
-
-    setSaving(true);
-    try {
-      // TODO: Implement API call to update accommodation
-      const updatedAccommodation: Accommodation = {
-        ...accommodation,
-        name: formData.name,
-        accommodationType: formData.accommodationType,
-        address: formData.address || undefined,
-        checkInDate: formData.checkInDate,
-        checkOutDate: formData.checkOutDate,
-        websiteUrl: formData.websiteUrl || undefined,
-        cost: parseFloat(formData.cost),
-        status: formData.status,
-        notes: formData.notes || undefined,
-      };
-      console.log('Updating accommodation:', updatedAccommodation);
-      
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      onEdit(updatedAccommodation);
-      setIsEditing(false);
-    } catch (error) {
-      console.error('Failed to update accommodation:', error);
-      setErrors({ submit: 'Failed to update accommodation. Please try again.' });
-    } finally {
-      setSaving(false);
-    }
   };
 
   if (isEditing) {
     return (
-      <Paper elevation={1} sx={{ p: 2.5, mb: 1.5, backgroundColor: 'background.paper', borderRadius: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-            Edit Accommodation
-          </Typography>
-        </Box>
-
-        <Box component="form" onSubmit={handleSubmit}>
-          <Stack spacing={2}>
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-              <TextField
-                required
-                label="Name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                error={!!errors.name}
-                helperText={errors.name}
-                inputProps={{ maxLength: 200 }}
-                sx={{ 
-                  flex: 1, 
-                  minWidth: '200px',
-                  '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                  '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                  '& .MuiInputBase-input': { padding: '4px 10px' },
-                  '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
-                }}
-                size="small"
-              />
-
-              <TextField
-                select
-                label="Type"
-                name="accommodationType"
-                value={formData.accommodationType}
-                onChange={handleChange}
-                sx={{ 
-                  width: '150px',
-                  '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                  '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                  '& .MuiSelect-select': { padding: '4px 10px' }
-                }}
-                size="small"
-              >
-                <MenuItem value={AccommodationType.Booking}>Booking</MenuItem>
-                <MenuItem value={AccommodationType.Hotel}>Hotel</MenuItem>
-                <MenuItem value={AccommodationType.Apartment}>Apartment</MenuItem>
-                <MenuItem value={AccommodationType.Airbnb}>Airbnb</MenuItem>
-                <MenuItem value={AccommodationType.Other}>Other</MenuItem>
-              </TextField>
-            </Box>
-
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-              <TextField
-                required
-                label="Check-in Date"
-                name="checkInDate"
-                type="date"
-                value={formData.checkInDate}
-                onChange={handleChange}
-                InputLabelProps={{ shrink: true }}
-                sx={{ 
-                  width: '180px',
-                  '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                  '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                  '& .MuiInputBase-input': { padding: '4px 10px' },
-                  '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
-                }}
-                size="small"
-              />
-
-              <TextField
-                required
-                label="Check-out Date"
-                name="checkOutDate"
-                type="date"
-                value={formData.checkOutDate}
-                onChange={handleChange}
-                error={!!errors.checkOutDate}
-                helperText={errors.checkOutDate}
-                InputLabelProps={{ shrink: true }}
-                sx={{ 
-                  width: '180px',
-                  '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                  '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                  '& .MuiInputBase-input': { padding: '4px 10px' },
-                  '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
-                }}
-                size="small"
-              />
-            </Box>
-
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-              <TextField
-                required
-                label="Cost"
-                name="cost"
-                type="number"
-                value={formData.cost}
-                onChange={handleChange}
-                inputProps={{ min: 0, step: 0.01 }}
-                sx={{ 
-                  width: '120px',
-                  '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                  '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                  '& .MuiInputBase-input': { padding: '4px 10px' },
-                  '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
-                }}
-                size="small"
-              />
-
-              <TextField
-                select
-                label="Status"
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                sx={{ 
-                  width: '150px',
-                  '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                  '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                  '& .MuiSelect-select': { padding: '4px 10px' }
-                }}
-                size="small"
-              >
-                <MenuItem value={AccommodationStatus.Planned}>Planned</MenuItem>
-                <MenuItem value={AccommodationStatus.Confirmed}>Confirmed</MenuItem>
-                <MenuItem value={AccommodationStatus.PaymentRequired}>Payment Required</MenuItem>
-                <MenuItem value={AccommodationStatus.Paid}>Paid</MenuItem>
-                <MenuItem value={AccommodationStatus.Cancelled}>Cancelled</MenuItem>
-              </TextField>
-            </Box>
-
-            <TextField
-              fullWidth
-              label="Address"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              inputProps={{ maxLength: 500 }}
-              placeholder="Full address"
-              sx={{
-                '& .MuiInputBase-root': { fontSize: '0.75rem', minHeight: '32px' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiInputBase-input': { padding: '4px 10px' }
-              }}
-              size="small"
-            />
-
-            <TextField
-              fullWidth
-              label="Website URL"
-              name="websiteUrl"
-              value={formData.websiteUrl}
-              onChange={handleChange}
-              sx={{
-                '& .MuiInputBase-root': { fontSize: '0.75rem', minHeight: '32px' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiInputBase-input': { padding: '4px 10px' }
-              }}
-              size="small"
-            />
-
-            <TextField
-              fullWidth
-              label="Notes"
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              multiline
-              rows={2}
-              sx={{
-                '& .MuiInputBase-root': { fontSize: '0.75rem' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiInputBase-input': { padding: '4px 10px' }
-              }}
-              size="small"
-            />
-
-            {errors.submit && (
-              <Alert severity="error">{errors.submit}</Alert>
-            )}
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-              <Button
-                variant="outlined"
-                onClick={handleCancelEdit}
-                disabled={saving}
-                size="small"
-                sx={{ fontSize: '0.7rem', py: 0.4, px: 1.2 }}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                type="submit"
-                disabled={saving}
-                size="small"
-                sx={{
-                  fontSize: '0.7rem',
-                  py: 0.4,
-                  px: 1.2,
-                  backgroundColor: '#e3f2fd',
-                  color: '#1976d2',
-                  '&:hover': { backgroundColor: '#bbdefb' },
-                  border: '1px solid #90caf9',
-                }}
-              >
-                {saving ? 'Saving...' : 'Save'}
-              </Button>
-            </Box>
-          </Stack>
-        </Box>
-      </Paper>
+      <AccommodationForm
+        tripPointId={accommodation.tripPointId}
+        tripPointArrivalDate={accommodation.checkInDate}
+        tripPointDepartureDate={accommodation.checkOutDate}
+        onCancel={handleCancelEdit}
+        onSuccess={handleSuccessEdit}
+        label="Edit accommodation"
+        initialData={accommodation}
+      />
     );
   }
 

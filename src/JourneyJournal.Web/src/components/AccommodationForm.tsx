@@ -28,20 +28,33 @@ interface AccommodationFormProps {
   tripPointDepartureDate?: string;
   onCancel: () => void;
   onSuccess: (accommodation: Accommodation) => void;
+  label?: string;
+  initialData?: Partial<Accommodation>;
 }
 
-const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartureDate, onCancel, onSuccess }: AccommodationFormProps) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    accommodationType: AccommodationType.Hotel,
-    address: '',
-    checkInDate: tripPointArrivalDate ? tripPointArrivalDate.split('T')[0] : '',
-    checkOutDate: tripPointDepartureDate ? tripPointDepartureDate.split('T')[0] : '',
-    websiteUrl: '',
-    cost: '',
-    status: AccommodationStatus.Planned,
-    notes: '',
+import { useEffect } from 'react';
+const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartureDate, onCancel, onSuccess, label, initialData }: AccommodationFormProps) => {
+  const formatDate = (date?: string) => {
+    if (!date) return '';
+    // Handles both 'YYYY-MM-DD' and 'YYYY-MM-DDTHH:mm:ssZ'
+    return date.split('T')[0];
+  };
+  const getInitialFormData = () => ({
+    name: initialData?.name ?? '',
+    accommodationType: initialData?.accommodationType ?? AccommodationType.Hotel,
+    address: initialData?.address ?? '',
+    checkInDate: initialData?.checkInDate ? formatDate(initialData.checkInDate) : (tripPointArrivalDate ? formatDate(tripPointArrivalDate) : ''),
+    checkOutDate: initialData?.checkOutDate ? formatDate(initialData.checkOutDate) : (tripPointDepartureDate ? formatDate(tripPointDepartureDate) : ''),
+    websiteUrl: initialData?.websiteUrl ?? '',
+    cost: initialData?.cost !== undefined ? initialData.cost.toString() : '',
+    status: initialData?.status ?? AccommodationStatus.Planned,
+    notes: initialData?.notes ?? '',
   });
+  const [formData, setFormData] = useState(getInitialFormData);
+  useEffect(() => {
+    setFormData(getInitialFormData());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialData, tripPointArrivalDate, tripPointDepartureDate]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -128,9 +141,9 @@ const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartu
   };
 
   return (
-    <Paper elevation={1} sx={{ p: 2.5, borderRadius: 2, backgroundColor: 'background.paper' }}>
+    <Paper elevation={1} sx={{ p: 2.5, borderRadius: 2, backgroundColor: 'background.paper', mb: 2 }}>
       <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
-        Add Accommodation
+        {label || 'Add Accommodation'}
       </Typography>
       
       <Box component="form" onSubmit={handleSubmit}>
