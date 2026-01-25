@@ -13,6 +13,15 @@ import {
 } from '@mui/material';
 import type { Route } from '../types/trip';
 import { TransportationType } from '../types/trip';
+import {
+  textFieldSx,
+  selectFieldSx,
+  dateFieldSx,
+  amountFieldSx,
+  notesFieldSx,
+  buttonOutlinedSx,
+  buttonContainedSx
+} from '../styles/formStyles';
 
 interface RouteFormProps {
   fromPointId: number;
@@ -23,20 +32,29 @@ interface RouteFormProps {
   defaultArrivalDate?: string;
   onCancel: () => void;
   onSuccess: (route: Route) => void;
+  editMode?: boolean;
+  initialData?: Partial<Route>;
 }
 
-const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, defaultDepartureDate, defaultArrivalDate, onCancel, onSuccess }: RouteFormProps) => {
+import { useEffect } from 'react';
+const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, defaultDepartureDate, defaultArrivalDate, onCancel, onSuccess, editMode = false, initialData }: RouteFormProps) => {
   const routeName = `${fromPointName} → ${toPointName}`;
-  const [formData, setFormData] = useState({
-    transportationType: TransportationType.Flight,
-    carrier: '',
-    departureTime: defaultDepartureDate || '',
-    arrivalTime: defaultArrivalDate || '',
-    durationMinutes: '',
-    cost: '',
-    isSelected: false,
-    notes: '',
+  const getInitialFormData = () => ({
+    transportationType: initialData?.transportationType ?? TransportationType.Flight,
+    carrier: initialData?.carrier ?? '',
+    departureTime: initialData?.departureTime ?? (defaultDepartureDate || ''),
+    arrivalTime: initialData?.arrivalTime ?? (defaultArrivalDate || ''),
+    durationMinutes: initialData?.durationMinutes?.toString() ?? '',
+    cost: initialData?.cost?.toString() ?? '',
+    isSelected: initialData?.isSelected ?? false,
+    notes: initialData?.notes ?? '',
   });
+  const [formData, setFormData] = useState(getInitialFormData);
+
+  useEffect(() => {
+    setFormData(getInitialFormData());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialData, editMode, defaultDepartureDate, defaultArrivalDate]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -114,7 +132,7 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
   return (
     <Paper elevation={1} sx={{ p: 2.5, borderRadius: 2, backgroundColor: 'background.paper' }}>
       <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
-        Add route
+        {editMode ? 'Edit route' : 'Add route'}
       </Typography>
       
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -143,12 +161,7 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
               name="transportationType"
               value={formData.transportationType}
               onChange={handleChange}
-              sx={{ 
-                width: '150px',
-                '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiSelect-select': { padding: '4px 10px' }
-              }}
+              sx={selectFieldSx}
               size="small"
             >
               <MenuItem value={TransportationType.Flight}>Flight</MenuItem>
@@ -165,12 +178,7 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
               value={formData.carrier}
               onChange={handleChange}
               placeholder="Airline, train company, etc."
-              sx={{ 
-                width: '180px',
-                '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiInputBase-input': { padding: '4px 10px' }
-              }}
+              sx={textFieldSx}
               size="small"
             />
 
@@ -181,12 +189,7 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
               value={formData.cost}
               onChange={handleChange}
               inputProps={{ min: 0, step: 0.01 }}
-              sx={{ 
-                width: '120px',
-                '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiInputBase-input': { padding: '4px 10px' }
-              }}
+              sx={amountFieldSx}
               size="small"
             />
           </Box>
@@ -199,12 +202,7 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
               value={formData.departureTime}
               onChange={handleChange}
               InputLabelProps={{ shrink: true }}
-              sx={{ 
-                width: '170px',
-                '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiInputBase-input': { padding: '4px 10px' }
-              }}
+              sx={dateFieldSx}
               size="small"
             />
 
@@ -217,13 +215,7 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
               error={!!errors.arrivalTime}
               helperText={errors.arrivalTime}
               InputLabelProps={{ shrink: true }}
-              sx={{ 
-                width: '170px',
-                '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiInputBase-input': { padding: '4px 10px' },
-                '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
-              }}
+              sx={dateFieldSx}
               size="small"
             />
 
@@ -234,12 +226,7 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
               value={formData.durationMinutes}
               onChange={handleChange}
               inputProps={{ min: 0 }}
-              sx={{ 
-                width: '120px',
-                '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-                '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-                '& .MuiInputBase-input': { padding: '4px 10px' }
-              }}
+              sx={amountFieldSx}
               size="small"
             />
           </Box>
@@ -254,11 +241,7 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
             minRows={1}
             maxRows={2}
             placeholder="Additional route details..."
-            sx={{
-              '& .MuiInputBase-root': { fontSize: '0.75rem' },
-              '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-              '& .MuiInputBase-input': { padding: '4px 10px' }
-            }}
+            sx={notesFieldSx}
             size="small"
           />
 
@@ -272,7 +255,7 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
               onClick={onCancel}
               disabled={loading}
               size="small"
-              sx={{ fontSize: '0.7rem', py: 0.4, px: 1.2 }}
+              sx={buttonOutlinedSx}
             >
               Cancel
             </Button>
@@ -281,15 +264,7 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
               type="submit"
               disabled={loading}
               size="small"
-              sx={{
-                fontSize: '0.7rem',
-                py: 0.4,
-                px: 1.2,
-                backgroundColor: '#e3f2fd',
-                color: '#1976d2',
-                '&:hover': { backgroundColor: '#bbdefb' },
-                border: '1px solid #90caf9',
-              }}
+              sx={buttonContainedSx}
             >
               {loading ? 'Saving...' : 'Save'}
             </Button>
