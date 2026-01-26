@@ -48,6 +48,7 @@ const ExpensesPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [currentTrip, setCurrentTrip] = useState<Trip | null>(null);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tabValue, setTabValue] = useState(parseInt(searchParams.get('tab') || '0'));
@@ -127,6 +128,9 @@ const ExpensesPage = () => {
         if (defaultTrip) {
           const fullTrip = await tripService.getById(defaultTrip.tripId.toString());
           setCurrentTrip(fullTrip);
+          // Fetch expenses using expenseService.getAll
+          const expensesData = await expenseService.getAll(fullTrip.tripId);
+          setExpenses(expensesData);
         }
       } catch (err) {
         console.error('Failed to fetch trip:', err);
@@ -155,9 +159,9 @@ const ExpensesPage = () => {
     try {
       await expenseService.delete(currentTrip.tripId, selectedExpense.expenseId);
       
-      // Refresh trip data
-      const updatedTrip = await tripService.getById(currentTrip.tripId.toString());
-      setCurrentTrip(updatedTrip);
+      // Refresh expenses data
+      const updatedExpenses = await expenseService.getAll(currentTrip.tripId);
+      setExpenses(updatedExpenses);
       
       setDeleteSnackbarOpen(false);
       setSelectedExpense(null);
@@ -198,7 +202,6 @@ const ExpensesPage = () => {
 
   // Using DateHelper.formatDate for date display
 
-  const expenses = currentTrip?.expenses || [];
   // Helper to sum amounts
   const getTotalAmount = (expenseList: Expense[]) => expenseList.reduce((sum, exp) => sum + exp.amount, 0);
 
@@ -262,7 +265,7 @@ const ExpensesPage = () => {
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteSnackbarOpen} onClose={handleDeleteCancel} PaperProps={{ sx: { minWidth: 'auto', maxWidth: '350px' } }}>
         <DialogTitle sx={{ fontWeight: 600, fontSize: '0.95rem', py: 1.5, px: 2 }}>
-          Delete {selectedExpense?.amount.toFixed(2)} {currentTrip?.currency || 'EUR'} expense?
+          Delete {selectedExpense?.amount.toFixed(2)} {selectedExpense?.currency || 'EUR'} expense?
         </DialogTitle>
         <DialogActions sx={{ gap: 0.5, p: 1.5, pt: 0 }}>
           <Button onClick={handleDeleteCancel} disabled={deleting} size="small" sx={{ fontSize: '0.7rem', py: 0.4, px: 1.2 }}>
@@ -313,7 +316,7 @@ const ExpensesPage = () => {
         {/* Summary */}
         <Box sx={{ px: 2, py: 1, borderBottom: 1, borderColor: 'divider' }}>
           <Typography variant="body1" sx={{ mb: 0.5 }}>
-            All Expenses: {totalAmount.toFixed(2)} {currentTrip.currency || 'EUR'}
+            All Expenses: {totalAmount.toFixed(2)} {expenses[0]?.currency || currentTrip?.currency || 'EUR'}
           </Typography>
           <Typography variant="body1">
             Expenses by Payment Method: Cash {totalCash.toFixed(2)} + Card {totalCard.toFixed(2)}
@@ -342,7 +345,7 @@ const ExpensesPage = () => {
                       {category}
                     </Typography>
                     <Typography variant="body2" color="primary" fontWeight="bold">
-                      Total: {getTotalAmount(categoryExpenses).toFixed(2)} {currentTrip.currency || 'EUR'}
+                      Total: {getTotalAmount(categoryExpenses).toFixed(2)} {expenses[0]?.currency || currentTrip?.currency || 'EUR'}
                     </Typography>
                   </Box>
                   <Box>
