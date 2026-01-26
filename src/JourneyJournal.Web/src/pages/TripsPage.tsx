@@ -15,6 +15,7 @@ import type { Trip, TripPoint } from '../types/trip';
 import TripForm from '../components/TripForm';
 import TripPointForm from '../components/TripPointForm';
 import TripPointSummary from '../components/TripPointSummary';
+import { DateHelper } from '../utils/DateHelper';
 
 const TripsPage = () => {
   const navigate = useNavigate();
@@ -49,8 +50,8 @@ const TripsPage = () => {
           setFormData({
             name: currentTrip.name,
             description: currentTrip.description || '',
-            startDate: currentTrip.startDate.split('T')[0],
-            endDate: currentTrip.endDate ? currentTrip.endDate.split('T')[0] : '',
+            startDate: DateHelper.formatDateShort(currentTrip.startDate),
+            endDate: currentTrip.endDate ? DateHelper.formatDateShort(currentTrip.endDate) : '',
             plannedCost: currentTrip.plannedCost || 0,
             totalCost: currentTrip.totalCost || 0,
             currency: currentTrip.currency || 'EUR',
@@ -79,19 +80,11 @@ const TripsPage = () => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
-
   const formatDateRange = (startDate: string, endDate?: string) => {
     if (!endDate) {
-      return `Starting ${formatDate(startDate)}`;
+      return `Starting ${DateHelper.formatDate(startDate)}`;
     }
-    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+    return `${DateHelper.formatDate(startDate)} - ${DateHelper.formatDate(endDate)}`;
   };
 
   const handleEdit = async (data: any) => {
@@ -109,8 +102,8 @@ const TripsPage = () => {
       setFormData({
         name: updatedTrip.name,
         description: updatedTrip.description || '',
-        startDate: updatedTrip.startDate.split('T')[0],
-        endDate: updatedTrip.endDate ? updatedTrip.endDate.split('T')[0] : '',
+        startDate: DateHelper.formatDateShort(updatedTrip.startDate),
+        endDate: updatedTrip.endDate ? DateHelper.formatDateShort(updatedTrip.endDate) : '',
         plannedCost: updatedTrip.plannedCost || 0,
         totalCost: updatedTrip.totalCost || 0,
         currency: updatedTrip.currency || 'EUR',
@@ -130,8 +123,8 @@ const TripsPage = () => {
       setFormData({
         name: trip.name,
         description: trip.description || '',
-        startDate: trip.startDate.split('T')[0],
-        endDate: trip.endDate ? trip.endDate.split('T')[0] : '',
+        startDate: DateHelper.formatDateShort(trip.startDate),
+        endDate: trip.endDate ? DateHelper.formatDateShort(trip.endDate) : '',
         plannedCost: trip.plannedCost || 0,
         totalCost: trip.totalCost || 0,
         currency: trip.currency || 'EUR',

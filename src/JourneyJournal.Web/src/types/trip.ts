@@ -1,3 +1,14 @@
+export interface UpdateAccommodationRequest {
+  name: string;
+  accommodationType: AccommodationType;
+  address?: string;
+  checkInDate: string;
+  checkOutDate: string;
+  websiteUrl?: string;
+  cost: number;
+  status: AccommodationStatus;
+  notes?: string;
+}
 import type { Expense } from './expense';
 
 export interface Trip {

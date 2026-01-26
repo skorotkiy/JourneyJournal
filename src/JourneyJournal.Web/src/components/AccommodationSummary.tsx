@@ -12,6 +12,7 @@ import {
   DialogActions,
 } from '@mui/material';
 import AccommodationForm from './AccommodationForm';
+import { accommodationService } from '../services/accommodationService';
 import {
   EditOutlined as EditIcon,
   DeleteOutline as DeleteIcon,
@@ -20,6 +21,8 @@ import {
 } from '@mui/icons-material';
 import type { Accommodation } from '../types/trip';
 import { AccommodationType, AccommodationStatus } from '../types/trip';
+import type { UpdateAccommodationRequest } from '../types/trip';
+import { DateHelper } from '../utils/DateHelper';
 
 interface AccommodationSummaryProps {
   accommodation: Accommodation;
@@ -69,23 +72,8 @@ const AccommodationSummary = ({ accommodation, onEdit, onRemove }: Accommodation
     return { label: getStatusName(status), color: 'default' };
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return null;
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
-
-  const calculateNights = (): number | null => {
-    if (!accommodation.checkInDate || !accommodation.checkOutDate) return null;
-    const checkIn = new Date(accommodation.checkInDate);
-    const checkOut = new Date(accommodation.checkOutDate);
-    const diffTime = Math.abs(checkOut.getTime() - checkIn.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
+  // Use DateHelper for formatting and calculations
+  const nights = DateHelper.calculateNights(accommodation.checkInDate, accommodation.checkOutDate);
 
   const handleRemoveClick = () => {
     setShowDeleteConfirm(true);
@@ -113,9 +101,27 @@ const AccommodationSummary = ({ accommodation, onEdit, onRemove }: Accommodation
 
   const handleEditClick = () => setIsEditing(true);
   const handleCancelEdit = () => setIsEditing(false);
-  const handleSuccessEdit = (updatedAccommodation: Accommodation) => {
-    onEdit(updatedAccommodation);
-    setIsEditing(false);
+  const handleSuccessEdit = async (updatedAccommodation: Accommodation) => {
+    try {
+      const payload: UpdateAccommodationRequest = {
+        name: updatedAccommodation.name,
+        accommodationType: updatedAccommodation.accommodationType,
+        address: updatedAccommodation.address,
+        checkInDate: updatedAccommodation.checkInDate,
+        checkOutDate: updatedAccommodation.checkOutDate,
+        websiteUrl: updatedAccommodation.websiteUrl,
+        cost: typeof updatedAccommodation.cost === 'string' ? parseFloat(updatedAccommodation.cost) : updatedAccommodation.cost,
+        status: updatedAccommodation.status,
+        notes: updatedAccommodation.notes,
+      };
+      const saved = await accommodationService.update(updatedAccommodation.accommodationId, payload);
+      onEdit(saved);
+    } catch (error) {
+      // Optionally show error to user
+      console.error('Failed to update accommodation:', error);
+    } finally {
+      setIsEditing(false);
+    }
   };
 
   if (isEditing) {
@@ -194,8 +200,8 @@ const AccommodationSummary = ({ accommodation, onEdit, onRemove }: Accommodation
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <EventIcon fontSize="small" sx={{ color: 'text.secondary' }} />
               <Typography variant="body2">
-                {formatDate(accommodation.checkInDate || '')} - {formatDate(accommodation.checkOutDate || '')}
-                {calculateNights() && ` (${calculateNights()} night${calculateNights() === 1 ? '' : 's'})`}
+                {DateHelper.formatDate(accommodation.checkInDate || '')} - {DateHelper.formatDate(accommodation.checkOutDate || '')}
+                {nights && ` (${nights} night${nights === 1 ? '' : 's'})`}
               </Typography>
             </Box>
           )}

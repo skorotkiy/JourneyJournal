@@ -21,6 +21,7 @@ import {
 import type { Expense, CreateExpenseRequest } from '../types/expense';
 import { ExpenseCategory, PaymentMethod } from '../types/expense';
 import { expenseService } from '../services/expenseService';
+import { DateHelper } from '../utils/DateHelper';
 
 interface ExpenseFormProps {
   tripId: number;
@@ -34,7 +35,7 @@ const ExpenseForm = ({ tripId, onCancel, onSuccess, initialData }: ExpenseFormPr
     description: initialData?.description || '',
     category: initialData?.category || ExpenseCategory.Other,
     amount: initialData?.amount.toString() || '',
-    expenseDate: initialData?.expenseDate.split('T')[0] || new Date().toISOString().split('T')[0],
+    expenseDate: initialData?.expenseDate ? DateHelper.formatDateShort(initialData.expenseDate) : DateHelper.formatDateShort(new Date().toISOString()),
     paymentMethod: initialData?.paymentMethod || PaymentMethod.Cash,
     notes: initialData?.notes || '',
   });

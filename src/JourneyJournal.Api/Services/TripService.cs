@@ -472,4 +472,25 @@ public class TripService
             throw new ArgumentException("Rating must be between 1 and 5");
         }
     }
+
+    public async Task<AccommodationDto?> UpdateAccommodationAsync(int accommodationId, UpdateAccommodationRequest request)
+    {
+        var accommodation = await _context.Accommodations.FindAsync(accommodationId);
+        if (accommodation == null)
+            return null;
+
+        accommodation.Name = request.Name;
+        accommodation.AccommodationType = request.AccommodationType;
+        accommodation.Address = request.Address;
+        accommodation.CheckInDate = DateTime.Parse(request.CheckInDate);
+        accommodation.CheckOutDate = DateTime.Parse(request.CheckOutDate);
+        accommodation.WebsiteUrl = request.WebsiteUrl;
+        accommodation.Cost = request.Cost;
+        accommodation.Status = request.Status;
+        accommodation.Notes = request.Notes;
+        accommodation.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+        return _mapper.Map<AccommodationDto>(accommodation);
+    }
 }

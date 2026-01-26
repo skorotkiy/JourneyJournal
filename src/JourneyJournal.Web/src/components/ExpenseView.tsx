@@ -3,6 +3,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import type { Expense } from '../types/expense';
 import { ExpenseCategory, PaymentMethod } from '../types/expense';
+import { DateHelper } from '../utils/DateHelper';
 
 interface ExpenseViewProps {
   expense: Expense;
@@ -14,7 +15,7 @@ interface ExpenseViewProps {
   hideCategory?: boolean;
 }
 
-const ExpenseView = ({ expense, currency = 'EUR', onEdit, onDelete, compact = false, hideCategory = false }: ExpenseViewProps) => {
+const ExpenseView = ({ expense, onEdit, onDelete, compact = false, hideCategory = false }: ExpenseViewProps) => {
   const getCategoryLabel = (category: ExpenseCategory): string => {
     switch (category) {
       case ExpenseCategory.Transportation: return 'Transportation';
@@ -46,13 +47,7 @@ const ExpenseView = ({ expense, currency = 'EUR', onEdit, onDelete, compact = fa
     return method === PaymentMethod.Cash ? 'Cash' : 'Card';
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
+  // Use DateHelper.formatDate for date display
 
   return (
     <Paper
@@ -71,7 +66,7 @@ const ExpenseView = ({ expense, currency = 'EUR', onEdit, onDelete, compact = fa
           {compact ? (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem', minWidth: '90px', flexShrink: 0 }}>
-                {formatDate(expense.expenseDate)}
+                {DateHelper.formatDate(expense.expenseDate)}
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '0.9rem', minWidth: '200px', flexShrink: 0 }}>
                 {expense.description}
@@ -108,7 +103,7 @@ const ExpenseView = ({ expense, currency = 'EUR', onEdit, onDelete, compact = fa
                   {expense.amount.toFixed(2)} ({getPaymentMethodLabel(expense.paymentMethod)})
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                  {formatDate(expense.expenseDate)}
+                  {DateHelper.formatDate(expense.expenseDate)}
                 </Typography>
               </Box>
             </>

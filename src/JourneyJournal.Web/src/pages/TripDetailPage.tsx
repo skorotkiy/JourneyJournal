@@ -12,6 +12,7 @@ import ExpenseView from '../components/ExpenseView';
 import TripPointSummary from '../components/TripPointSummary';
 import { tripService } from '../services/tripService';
 import type { Trip } from '../types/trip';
+import { DateHelper } from '../utils/DateHelper';
 
 
 
@@ -66,19 +67,11 @@ const TripDetailPage = () => {
     fetchTrip();
   }, [tripId, searchParams]);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
-
   const formatDateRange = (startDate: string, endDate?: string) => {
     if (!endDate) {
-      return `Starting ${formatDate(startDate)}`;
+      return `Starting ${DateHelper.formatDate(startDate)}`;
     }
-    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+    return `${DateHelper.formatDate(startDate)} - ${DateHelper.formatDate(endDate)}`;
   };
 
   // Removed unused handleChange for TripForm integration
@@ -135,11 +128,11 @@ const TripDetailPage = () => {
     <Box sx={{ maxWidth: 500, mx: 'auto', py: 4 }}>
       {isEditing ? (
         <Paper elevation={3} sx={{ px: 4, pt: 2, pb: 2, mt: 2 }}>
-          <TripForm
+            <TripForm
             initialData={{
               ...trip,
-              startDate: trip.startDate ? trip.startDate.split('T')[0] : '',
-              endDate: trip.endDate ? trip.endDate.split('T')[0] : '',
+              startDate: trip.startDate ? DateHelper.formatDateShort(trip.startDate) : '',
+              endDate: trip.endDate ? DateHelper.formatDateShort(trip.endDate) : '',
             }}
             loading={false}
             errors={{}}
@@ -342,18 +335,18 @@ const TripDetailPage = () => {
       {!isEditing && showTripPointForm && trip && (
         <TripPointForm
           tripId={trip.tripId}
-          tripStartDate={trip.startDate ? trip.startDate.split('T')[0] : undefined}
-          tripEndDate={trip.endDate ? trip.endDate.split('T')[0] : undefined}
-          prevTripPointDepartureDate={trip.tripPoints && trip.tripPoints.length > 0 ? trip.tripPoints[trip.tripPoints.length - 1].departureDate.split('T')[0] : undefined}
+          tripStartDate={trip.startDate ? DateHelper.formatDateShort(trip.startDate) : undefined}
+          tripEndDate={trip.endDate ? DateHelper.formatDateShort(trip.endDate) : undefined}
+          prevTripPointDepartureDate={trip.tripPoints && trip.tripPoints.length > 0 ? DateHelper.formatDateShort(trip.tripPoints[trip.tripPoints.length - 1].departureDate) : undefined}
           onCancel={() => setShowTripPointForm(false)}
           onSuccess={async (newTripPoint) => {
             try {
               // Update trip with new trip point
-              const updatedTripData = {
-                name: trip.name,
-                description: trip.description,
-                startDate: trip.startDate.split('T')[0],
-                endDate: trip.endDate ? trip.endDate.split('T')[0] : undefined,
+                      const updatedTripData = {
+                        name: trip.name,
+                        description: trip.description,
+                        startDate: DateHelper.formatDateShort(trip.startDate),
+                        endDate: trip.endDate ? DateHelper.formatDateShort(trip.endDate) : undefined,
                 plannedCost: trip.plannedCost,
                 totalCost: trip.totalCost,
                 currency: trip.currency,
@@ -435,8 +428,8 @@ const TripDetailPage = () => {
                     const updatedTripData = {
                       name: trip.name,
                       description: trip.description,
-                      startDate: trip.startDate.split('T')[0],
-                      endDate: trip.endDate ? trip.endDate.split('T')[0] : undefined,
+                      startDate: DateHelper.formatDateShort(trip.startDate),
+                      endDate: trip.endDate ? DateHelper.formatDateShort(trip.endDate) : undefined,
                       plannedCost: trip.plannedCost,
                       totalCost: trip.totalCost,
                       currency: trip.currency,
@@ -467,8 +460,8 @@ const TripDetailPage = () => {
                     const updatedTripData = {
                       name: trip.name,
                       description: trip.description,
-                      startDate: trip.startDate.split('T')[0],
-                      endDate: trip.endDate ? trip.endDate.split('T')[0] : undefined,
+                      startDate: DateHelper.formatDateShort(trip.startDate),
+                      endDate: trip.endDate ? DateHelper.formatDateShort(trip.endDate) : undefined,
                       plannedCost: trip.plannedCost,
                       totalCost: trip.totalCost,
                       currency: trip.currency,
@@ -561,8 +554,8 @@ const TripDetailPage = () => {
                         const updatedTripData = {
                           name: trip.name,
                           description: trip.description,
-                          startDate: trip.startDate.split('T')[0],
-                          endDate: trip.endDate ? trip.endDate.split('T')[0] : undefined,
+                          startDate: DateHelper.formatDateShort(trip.startDate),
+                          endDate: trip.endDate ? DateHelper.formatDateShort(trip.endDate) : undefined,
                           plannedCost: trip.plannedCost,
                           totalCost: trip.totalCost,
                           currency: trip.currency,

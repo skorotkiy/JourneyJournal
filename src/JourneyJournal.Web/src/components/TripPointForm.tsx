@@ -18,11 +18,13 @@ interface TripPointFormProps {
   onSuccess: (tripPoint: any) => void;
 }
 
+import { DateHelper } from '../utils/DateHelper';
+
 const TripPointForm = ({ tripId: _tripId, tripStartDate, tripEndDate, prevTripPointDepartureDate, onCancel, onSuccess }: TripPointFormProps) => {
   const [formData, setFormData] = useState({
     name: '',
-    arrivalDate: prevTripPointDepartureDate || tripStartDate || '',
-    departureDate: tripEndDate || '',
+    arrivalDate: prevTripPointDepartureDate ? DateHelper.formatDateShort(prevTripPointDepartureDate) : (tripStartDate ? DateHelper.formatDateShort(tripStartDate) : ''),
+    departureDate: tripEndDate ? DateHelper.formatDateShort(tripEndDate) : '',
     notes: '',
   });
   const [loading, setLoading] = useState(false);

@@ -21,6 +21,7 @@ import {
 import type { Route } from '../types/trip';
 import { TransportationType } from '../types/trip';
 import RouteForm from './RouteForm';
+import { DateHelper } from '../utils/DateHelper';
 
 interface RouteSummaryProps {
   route: Route;
@@ -47,16 +48,7 @@ const RouteSummary = ({ route, fromPointName, toPointName, onEdit, onRemove }: R
     }
   };
 
-  const formatDateTime = (dateString?: string) => {
-    if (!dateString) return null;
-    const d = new Date(dateString);
-    const dd = String(d.getDate()).padStart(2, '0');
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const yyyy = d.getFullYear();
-    const hh = String(d.getHours()).padStart(2, '0');
-    const min = String(d.getMinutes()).padStart(2, '0');
-    return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
-  };
+  // Use DateHelper.formatDateTime for datetime display
 
   const formatDuration = (minutes?: number) => {
     if (!minutes) return null;
@@ -174,9 +166,9 @@ const RouteSummary = ({ route, fromPointName, toPointName, onEdit, onRemove }: R
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <EventIcon fontSize="small" sx={{ color: 'text.secondary' }} />
               <Typography variant="body2">
-                {route.departureTime && formatDateTime(route.departureTime)}
+                {route.departureTime && DateHelper.formatDateTime(route.departureTime)}
                 {route.departureTime && route.arrivalTime && ' - '}
-                {route.arrivalTime && formatDateTime(route.arrivalTime)}
+                {route.arrivalTime && DateHelper.formatDateTime(route.arrivalTime)}
               </Typography>
             </Box>
           )}

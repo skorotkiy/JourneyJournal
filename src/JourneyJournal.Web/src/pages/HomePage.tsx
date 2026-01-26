@@ -5,6 +5,7 @@ import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import { tripService } from '../services/tripService';
 import type { Trip } from '../types/trip';
+import { DateHelper } from '../utils/DateHelper';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -31,16 +32,8 @@ const HomePage = () => {
   }, []);
 
   const formatDateRange = (startDate: string, endDate: string) => {
-    const formatDate = (dateString: string) => {
-      const date = new Date(dateString);
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}/${month}/${year}`;
-    };
-    
-    const start = formatDate(startDate);
-    const end = formatDate(endDate);
+    const start = DateHelper.formatDate(startDate);
+    const end = DateHelper.formatDate(endDate);
     return `${start} - ${end}`;
   };
 

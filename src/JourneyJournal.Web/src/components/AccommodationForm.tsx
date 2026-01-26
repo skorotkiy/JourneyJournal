@@ -33,18 +33,14 @@ interface AccommodationFormProps {
 }
 
 import { useEffect } from 'react';
+import { DateHelper } from '../utils/DateHelper';
 const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartureDate, onCancel, onSuccess, label, initialData }: AccommodationFormProps) => {
-  const formatDate = (date?: string) => {
-    if (!date) return '';
-    // Handles both 'YYYY-MM-DD' and 'YYYY-MM-DDTHH:mm:ssZ'
-    return date.split('T')[0];
-  };
   const getInitialFormData = () => ({
     name: initialData?.name ?? '',
     accommodationType: initialData?.accommodationType ?? AccommodationType.Hotel,
     address: initialData?.address ?? '',
-    checkInDate: initialData?.checkInDate ? formatDate(initialData.checkInDate) : (tripPointArrivalDate ? formatDate(tripPointArrivalDate) : ''),
-    checkOutDate: initialData?.checkOutDate ? formatDate(initialData.checkOutDate) : (tripPointDepartureDate ? formatDate(tripPointDepartureDate) : ''),
+    checkInDate: initialData?.checkInDate ? DateHelper.formatDateShort(initialData.checkInDate) : (tripPointArrivalDate ? DateHelper.formatDateShort(tripPointArrivalDate) : ''),
+    checkOutDate: initialData?.checkOutDate ? DateHelper.formatDateShort(initialData.checkOutDate) : (tripPointDepartureDate ? DateHelper.formatDateShort(tripPointDepartureDate) : ''),
     websiteUrl: initialData?.websiteUrl ?? '',
     cost: initialData?.cost !== undefined ? initialData.cost.toString() : '',
     status: initialData?.status ?? AccommodationStatus.Planned,

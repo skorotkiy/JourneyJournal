@@ -17,6 +17,7 @@ import AccommodationForm from './AccommodationForm';
 import AccommodationSummary from './AccommodationSummary';
 import RouteForm from './RouteForm';
 import RouteSummary from './RouteSummary';
+import { DateHelper } from '../utils/DateHelper';
 
 interface TripPointSummaryProps {
   tripPoint: TripPoint;
@@ -43,8 +44,8 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
   const [routes, setRoutes] = useState<Route[]>(tripPoint.routesFrom || []);
   const [formData, setFormData] = useState({
     name: tripPoint.name,
-    arrivalDate: tripPoint.arrivalDate.split('T')[0],
-    departureDate: tripPoint.departureDate.split('T')[0],
+    arrivalDate: DateHelper.formatDateShort(tripPoint.arrivalDate),
+    departureDate: DateHelper.formatDateShort(tripPoint.departureDate),
     notes: tripPoint.notes || '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -64,18 +65,9 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
     }
   }, [showAccommodationForm]);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
-
   const formatDateRange = () => {
-    const arrival = formatDate(tripPoint.arrivalDate);
-    const departure = formatDate(tripPoint.departureDate);
-    
+    const arrival = DateHelper.formatDate(tripPoint.arrivalDate || '');
+    const departure = DateHelper.formatDate(tripPoint.departureDate || '');
     return ` (${arrival} - ${departure})`;
   };
 
@@ -120,8 +112,8 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
   const handleCancelEdit = () => {
     setFormData({
       name: tripPoint.name,
-      arrivalDate: tripPoint.arrivalDate.split('T')[0],
-      departureDate: tripPoint.departureDate.split('T')[0],
+      arrivalDate: DateHelper.formatDateShort(tripPoint.arrivalDate),
+      departureDate: DateHelper.formatDateShort(tripPoint.departureDate),
       notes: tripPoint.notes || '',
     });
     setErrors({});

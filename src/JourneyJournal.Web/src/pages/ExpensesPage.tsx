@@ -20,6 +20,7 @@ import { tripService } from '../services/tripService';
 import type { Trip } from '../types/trip';
 import type { Expense } from '../types/expense';
 import { ExpenseCategory, PaymentMethod } from '../types/expense';
+import { DateHelper } from '../utils/DateHelper';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -69,7 +70,7 @@ const ExpensesPage = () => {
         }}
       >
         <Typography variant="body2" color="text.secondary" sx={{ minWidth: 90 }}>
-          {formatDate(expense.expenseDate)}
+          {DateHelper.formatDate(expense.expenseDate)}
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1, minWidth: 160 }}>
           <Typography variant="body1">{expense.description}</Typography>
@@ -195,13 +196,7 @@ const ExpensesPage = () => {
     return method === PaymentMethod.Cash ? 'Cash' : 'Card';
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
+  // Using DateHelper.formatDate for date display
 
   const expenses = currentTrip?.expenses || [];
   // Helper to sum amounts
