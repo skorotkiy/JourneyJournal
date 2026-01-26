@@ -25,6 +25,7 @@ builder.Services.AddDbContext<JourneyJournalDbContext>(options =>
 // Register application services
 builder.Services.AddScoped<TripService>();
 builder.Services.AddScoped<ExpenseService>();
+builder.Services.AddScoped<AccommodationService>();
 
 // Configure CORS for web client
 builder.Services.AddCors(options =>

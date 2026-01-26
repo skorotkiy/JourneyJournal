@@ -19,6 +19,7 @@ import {
   buttonContainedSx,
 } from '../styles/formStyles';
 import type { Accommodation } from '../types/trip';
+import { accommodationService } from '../services/accommodationService';
 import { AccommodationType, AccommodationStatus } from '../types/trip';
 
 
@@ -95,26 +96,12 @@ const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartu
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!validate()) {
       return;
     }
-
     setLoading(true);
     try {
-      // TODO: Implement API call to create accommodation
-      const accommodationData = {
-        ...formData,
-        tripPointId,
-        cost: parseFloat(formData.cost),
-      };
-      console.log('Creating accommodation:', accommodationData);
-      
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const createdAccommodation: Accommodation = {
-        accommodationId: Date.now(),
-        tripPointId,
+      const payload = {
         name: formData.name,
         accommodationType: formData.accommodationType,
         address: formData.address || undefined,
@@ -124,13 +111,19 @@ const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartu
         cost: parseFloat(formData.cost),
         status: formData.status,
         notes: formData.notes || undefined,
-        createdAt: new Date().toISOString(),
       };
-      
-      onSuccess(createdAccommodation);
+      let result: Accommodation;
+      if (initialData && initialData.accommodationId && initialData.accommodationId > 0) {
+        // Edit mode
+        result = await accommodationService.update(initialData.accommodationId, payload);
+      } else {
+        // Create mode
+        result = await accommodationService.create(tripPointId, payload);
+      }
+      onSuccess(result);
     } catch (error) {
-      console.error('Failed to create accommodation:', error);
-      setErrors({ submit: 'Failed to create accommodation. Please try again.' });
+      console.error('Failed to save accommodation:', error);
+      setErrors({ submit: 'Failed to save accommodation. Please try again.' });
     } finally {
       setLoading(false);
     }

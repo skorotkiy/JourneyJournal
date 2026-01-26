@@ -20,6 +20,8 @@ const TripDetailPage = () => {
     // State declarations for trip, error, loading, etc.
     const [trip, setTrip] = useState<Trip | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [backendUnavailable, setBackendUnavailable] = useState(false);
+    const [backendErrorMessage, setBackendErrorMessage] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [showExpenseForm, setShowExpenseForm] = useState(false);
@@ -36,8 +38,61 @@ const TripDetailPage = () => {
 
   // Removed unused form state for TripForm integration
 
-  // Helper function to transform trip points for backend (stub)
-  const transformTripPointsForBackend = (tripPoints: any[]) => tripPoints;
+  // Helper function to convert frontend trip points into API CreateTripPointRequest shape,
+  // ensuring routes include required fields and numeric types.
+  const transformTripPointsForBackend = (tripPoints: any[]) => {
+    if (!tripPoints) return [];
+
+    const sorted = [...tripPoints].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    const idToOrder = new Map<number, number>();
+    sorted.forEach((tp, idx) => idToOrder.set(tp.tripPointId, idx));
+
+    return sorted.map((tp: any, idx: number) => ({
+      name: tp.name || '',
+      order: idx,
+      arrivalDate: tp.arrivalDate || tp.arrival || null,
+      departureDate: tp.departureDate || tp.departure || null,
+      notes: tp.notes || undefined,
+      accommodations: (tp.accommodations || []).map((a: any) => ({
+        name: a.name || '',
+        accommodationType: a.accommodationType,
+        address: a.address || undefined,
+        checkInDate: a.checkInDate || a.checkIn || null,
+        checkOutDate: a.checkOutDate || a.checkOut || null,
+        websiteUrl: a.websiteUrl || a.website || undefined,
+        cost: a.cost !== undefined && a.cost !== null ? parseFloat(String(a.cost)) : undefined,
+        status: a.status ?? 1,
+        notes: a.notes || undefined,
+      })),
+      placesToVisit: (tp.placesToVisit || []).map((p: any, i: number) => ({
+        name: p.name || '',
+        category: p.category ?? 8,
+        address: p.address || undefined,
+        description: p.description || undefined,
+        price: p.price ?? undefined,
+        websiteUrl: p.websiteUrl || undefined,
+        usefulLinks: p.usefulLinks || undefined,
+        order: p.order ?? i,
+        rating: p.rating ?? undefined,
+        visitDate: p.visitDate || undefined,
+        visitStatus: p.visitStatus ?? 1,
+        afterVisitNotes: p.afterVisitNotes || undefined,
+      })),
+      routes: (tp.routesFrom || []).map((r: any) => ({
+        fromPointOrder: idToOrder.get(r.fromPointId) ?? idToOrder.get(tp.tripPointId) ?? 0,
+        toPointOrder: idToOrder.get(r.toPointId) ?? 0,
+        name: r.name || '',
+        transportationType: r.transportationType ?? r.transportationTypeId ?? 1,
+        carrier: r.carrier || undefined,
+        departureTime: r.departureTime || undefined,
+        arrivalTime: r.arrivalTime || undefined,
+        durationMinutes: r.durationMinutes !== undefined && r.durationMinutes !== null ? parseInt(String(r.durationMinutes), 10) : undefined,
+        cost: r.cost !== undefined && r.cost !== null ? parseFloat(String(r.cost)) : undefined,
+        isSelected: !!r.isSelected,
+        notes: r.notes || undefined,
+      })),
+    }));
+  };
 
   useEffect(() => {
     const fetchTrip = async () => {
@@ -58,7 +113,15 @@ const TripDetailPage = () => {
         }
       } catch (err) {
         console.error('Failed to fetch trip:', err);
-        setError('Failed to load trip. Please try again.');
+        // Detect network/backend connection issues (axios no response or network error)
+        const anyErr = err as any;
+        const isNetwork = anyErr && (anyErr.isAxiosError && !anyErr.response || (anyErr.message && /network|ECONNREFUSED|ENOTFOUND/i.test(anyErr.message)));
+        if (isNetwork) {
+          setBackendUnavailable(true);
+          setBackendErrorMessage(anyErr.message || 'Unable to connect to backend');
+        } else {
+          setError('Failed to load trip. Please try again.');
+        }
       } finally {
         setLoading(false);
       }
@@ -111,6 +174,20 @@ const TripDetailPage = () => {
     );
   }
 
+  if (backendUnavailable) {
+    return (
+      <Box sx={{ py: 6, display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
+        <Alert severity="error">Unable to connect to the backend service. {backendErrorMessage ? `(${backendErrorMessage})` : ''}</Alert>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button variant="contained" onClick={() => { setLoading(true); setBackendUnavailable(false); setBackendErrorMessage(null); setError(null); const fetchTrip = async () => { if (!tripId) return; try { const data = await tripService.getById(tripId); setTrip(data); } catch (e) { const anyErr = e as any; const isNetwork = anyErr && (anyErr.isAxiosError && !anyErr.response || (anyErr.message && /network|ECONNREFUSED|ENOTFOUND/i.test(anyErr.message))); if (isNetwork) { setBackendUnavailable(true); setBackendErrorMessage(anyErr.message || 'Unable to connect to backend'); } else { setError('Failed to load trip. Please try again.'); } } finally { setLoading(false); } }; fetchTrip(); }}>
+            Retry
+          </Button>
+          <Button variant="outlined" onClick={() => navigate('/trips')}>Back to Trips</Button>
+        </Box>
+      </Box>
+    );
+  }
+
   if (!trip) {
     return (
       <Box sx={{ py: 4 }}>
@@ -138,7 +215,17 @@ const TripDetailPage = () => {
             errors={{}}
             onSubmit={async (updated: any) => {
               try {
-                const updatedTrip = await tripService.update(trip!.tripId.toString(), updated);
+                const payload = { ...updated };
+                // Ensure tripPoints are transformed into backend shape
+                if (updated && Array.isArray(updated.tripPoints)) {
+                  payload.tripPoints = transformTripPointsForBackend(updated.tripPoints);
+                } else {
+                  payload.tripPoints = transformTripPointsForBackend(trip?.tripPoints || []);
+                }
+                // Log serialized payload for debugging
+                // eslint-disable-next-line no-console
+                console.debug('PUT /trips payload (trip edit):', JSON.stringify(payload, null, 2));
+                const updatedTrip = await tripService.update(trip!.tripId.toString(), payload);
                 setTrip(updatedTrip);
                 setIsEditing(false);
                 setError(null);
@@ -347,14 +434,14 @@ const TripDetailPage = () => {
                         description: trip.description,
                         startDate: DateHelper.formatDateShort(trip.startDate),
                         endDate: trip.endDate ? DateHelper.formatDateShort(trip.endDate) : undefined,
-                plannedCost: trip.plannedCost,
-                totalCost: trip.totalCost,
-                currency: trip.currency,
-                isCompleted: trip.isCompleted,
-                isDefault: trip.isDefault,
-                tripPoints: [...(trip.tripPoints || []), newTripPoint],
-              };
-              const updatedTrip = await tripService.update(trip.tripId.toString(), updatedTripData);
+                      plannedCost: trip.plannedCost,
+                      totalCost: trip.totalCost,
+                      currency: trip.currency,
+                      isCompleted: trip.isCompleted,
+                      isDefault: trip.isDefault,
+                      tripPoints: transformTripPointsForBackend([...(trip.tripPoints || []), newTripPoint]),
+                          };
+                          const updatedTrip = await tripService.update(trip.tripId.toString(), updatedTripData);
               setTrip(updatedTrip);
               setCreatedTripPoints([]);
               setShowTripPointForm(false);
@@ -425,6 +512,8 @@ const TripDetailPage = () => {
                     const updatedTripPoints = (trip.tripPoints || []).map((tp) =>
                       tp.tripPointId === updatedTripPoint.tripPointId ? updatedTripPoint : tp
                     );
+                    // eslint-disable-next-line no-console
+                    console.debug('TripDetailPage: updatedTripPoints (raw) before transform', JSON.stringify(updatedTripPoints, null, 2));
                     const updatedTripData = {
                       name: trip.name,
                       description: trip.description,
@@ -437,6 +526,9 @@ const TripDetailPage = () => {
                       isDefault: trip.isDefault,
                       tripPoints: transformTripPointsForBackend(updatedTripPoints),
                     };
+                    // Log serialized payload for debugging
+                    // eslint-disable-next-line no-console
+                    console.debug('PUT /trips payload (update trip point):', JSON.stringify(updatedTripData, null, 2));
                     const updatedTrip = await tripService.update(trip.tripId.toString(), updatedTripData);
                     setTrip(updatedTrip);
                   } catch (err) {
@@ -469,6 +561,9 @@ const TripDetailPage = () => {
                       isDefault: trip.isDefault,
                       tripPoints: transformTripPointsForBackend(filteredTripPoints),
                     };
+                    // Log serialized payload for debugging
+                    // eslint-disable-next-line no-console
+                    console.debug('PUT /trips payload (remove trip point):', JSON.stringify(updatedTripData, null, 2));
                     const updatedTrip = await tripService.update(trip.tripId.toString(), updatedTripData);
                     setTrip(updatedTrip);
                   } catch (err) {
@@ -561,8 +656,11 @@ const TripDetailPage = () => {
                           currency: trip.currency,
                           isCompleted: trip.isCompleted,
                           isDefault: trip.isDefault,
-                          tripPoints: updatedTripPoints,
+                          tripPoints: transformTripPointsForBackend(updatedTripPoints),
                         };
+                        // Log serialized payload for debugging
+                        // eslint-disable-next-line no-console
+                        console.debug('PUT /trips payload (insert trip point):', JSON.stringify(updatedTripData, null, 2));
                         const updatedTrip = await tripService.update(trip.tripId.toString(), updatedTripData);
                         setTrip(updatedTrip);
                         setAddAfterPointId(null);

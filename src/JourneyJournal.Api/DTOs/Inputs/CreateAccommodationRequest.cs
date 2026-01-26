@@ -9,6 +9,9 @@ namespace JourneyJournal.Api.DTOs.Inputs;
 public class CreateAccommodationRequest
 {
     [Required]
+    public int TripPointId { get; set; }
+
+    [Required]
     [MaxLength(200)]
     public string Name { get; set; } = string.Empty;
 

@@ -467,7 +467,7 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
             )}
           </Box>
 
-          {routes.length > 0 && (
+          {(hasNextPoint || routes.length > 0) && (
             <Box sx={{ mt: 2 }}>
               <Typography variant="body1" sx={{ fontWeight: 600 }}>
                 Routes
@@ -499,14 +499,21 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
                   fromPointName={tripPoint.name}
                   toPointName={nextPointName}
                   onEdit={(updatedRoute) => {
-                    setRoutes(prev => 
-                      prev.map(r => r.routeId === updatedRoute.routeId ? updatedRoute : r)
-                    );
+                    const updatedRoutes = (routes || []).map(r => r.routeId === updatedRoute.routeId ? updatedRoute : r);
+                    setRoutes(updatedRoutes);
+                    // Propagate change to parent so it can persist via trip update
+                    const updatedTripPoint = { ...tripPoint, routesFrom: updatedRoutes } as TripPoint;
+                    // eslint-disable-next-line no-console
+                    console.debug('TripPointSummary: propagating route edit to parent', updatedTripPoint);
+                    onEdit(updatedTripPoint);
                   }}
                   onRemove={() => {
-                    setRoutes(prev => 
-                      prev.filter(r => r.routeId !== route.routeId)
-                    );
+                    const updatedRoutes = (routes || []).filter(r => r.routeId !== route.routeId);
+                    setRoutes(updatedRoutes);
+                    const updatedTripPoint = { ...tripPoint, routesFrom: updatedRoutes } as TripPoint;
+                    // eslint-disable-next-line no-console
+                    console.debug('TripPointSummary: propagating route remove to parent', updatedTripPoint);
+                    onEdit(updatedTripPoint);
                   }}
                 />
               ))}
@@ -533,6 +540,8 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
                   ...tripPoint,
                   routesFrom: updatedRoutes,
                 };
+                // eslint-disable-next-line no-console
+                console.debug('TripPointSummary: propagating route add to parent', updatedTripPoint);
                 onEdit(updatedTripPoint);
                 
                 setShowRouteForm(false);

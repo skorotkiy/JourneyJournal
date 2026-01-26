@@ -92,11 +92,66 @@ const TripsPage = () => {
     setSaving(true);
     setFormErrors({});
     try {
+      const transformTripPointsForBackend = (tripPoints: any[]) => {
+        if (!tripPoints) return [];
+        const sorted = [...tripPoints].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        const idToOrder = new Map<number, number>();
+        sorted.forEach((tp, idx) => idToOrder.set(tp.tripPointId, idx));
+        return sorted.map((tp: any, idx: number) => ({
+          name: tp.name || '',
+          order: idx,
+          arrivalDate: tp.arrivalDate || tp.arrival || null,
+          departureDate: tp.departureDate || tp.departure || null,
+          notes: tp.notes || undefined,
+          accommodations: (tp.accommodations || []).map((a: any) => ({
+            name: a.name || '',
+            accommodationType: a.accommodationType,
+            address: a.address || undefined,
+            checkInDate: a.checkInDate || a.checkIn || null,
+            checkOutDate: a.checkOutDate || a.checkOut || null,
+            websiteUrl: a.websiteUrl || a.website || undefined,
+            cost: a.cost !== undefined && a.cost !== null ? parseFloat(String(a.cost)) : undefined,
+            status: a.status ?? 1,
+            notes: a.notes || undefined,
+          })),
+          placesToVisit: (tp.placesToVisit || []).map((p: any, i: number) => ({
+            name: p.name || '',
+            category: p.category ?? 8,
+            address: p.address || undefined,
+            description: p.description || undefined,
+            price: p.price ?? undefined,
+            websiteUrl: p.websiteUrl || undefined,
+            usefulLinks: p.usefulLinks || undefined,
+            order: p.order ?? i,
+            rating: p.rating ?? undefined,
+            visitDate: p.visitDate || undefined,
+            visitStatus: p.visitStatus ?? 1,
+            afterVisitNotes: p.afterVisitNotes || undefined,
+          })),
+          routes: (tp.routesFrom || []).map((r: any) => ({
+            fromPointOrder: idToOrder.get(r.fromPointId) ?? idToOrder.get(tp.tripPointId) ?? 0,
+            toPointOrder: idToOrder.get(r.toPointId) ?? 0,
+            name: r.name || '',
+            transportationType: r.transportationType ?? r.transportationTypeId ?? 1,
+            carrier: r.carrier || undefined,
+            departureTime: r.departureTime || undefined,
+            arrivalTime: r.arrivalTime || undefined,
+            durationMinutes: r.durationMinutes !== undefined && r.durationMinutes !== null ? parseInt(String(r.durationMinutes), 10) : undefined,
+            cost: r.cost !== undefined && r.cost !== null ? parseFloat(String(r.cost)) : undefined,
+            isSelected: !!r.isSelected,
+            notes: r.notes || undefined,
+          })),
+        }));
+      };
+
       const updateData = {
         ...data,
         plannedCost: data.plannedCost ? parseFloat(data.plannedCost) : undefined,
         totalCost: data.totalCost ? parseFloat(data.totalCost) : undefined,
       };
+      if (data && Array.isArray(data.tripPoints)) {
+        updateData.tripPoints = transformTripPointsForBackend(data.tripPoints);
+      }
       const updatedTrip = await tripService.update(trip.tripId.toString(), updateData);
       setTrip(updatedTrip);
       setFormData({

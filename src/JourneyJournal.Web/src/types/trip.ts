@@ -74,7 +74,7 @@ export type AccommodationStatus = typeof AccommodationStatus[keyof typeof Accomm
 
 export interface Accommodation {
   accommodationId: number;
-  tripPointId: number;
+  tripPointId?: number; // Optional for creation, required for persisted
   name: string;
   accommodationType: AccommodationType;
   address?: string;

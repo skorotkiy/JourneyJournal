@@ -22,6 +22,18 @@ export class DateHelper {
     return date.split('T')[0];
   }
 
+  // Returns 'YYYY-MM-DDTHH:MM' suitable for <input type="datetime-local"> values
+  static formatDateTimeInput(date?: string): string {
+    if (!date) return '';
+    const d = new Date(date);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+  }
+
   // Returns 'DD/MM/YYYY HH:MM' for display of date-times
   static formatDateTime(dateString?: string): string | null {
     if (!dateString) return null;

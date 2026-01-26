@@ -21,7 +21,6 @@ import {
 } from '@mui/icons-material';
 import type { Accommodation } from '../types/trip';
 import { AccommodationType, AccommodationStatus } from '../types/trip';
-import type { UpdateAccommodationRequest } from '../types/trip';
 import { DateHelper } from '../utils/DateHelper';
 
 interface AccommodationSummaryProps {
@@ -86,9 +85,7 @@ const AccommodationSummary = ({ accommodation, onEdit, onRemove }: Accommodation
   const handleConfirmDelete = async () => {
     setDeleting(true);
     try {
-      // TODO: Implement API call to delete accommodation
-      console.log('Deleting accommodation:', accommodation.accommodationId);
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await accommodationService.delete(accommodation.accommodationId);
       
       setShowDeleteConfirm(false);
       onRemove();
@@ -101,33 +98,15 @@ const AccommodationSummary = ({ accommodation, onEdit, onRemove }: Accommodation
 
   const handleEditClick = () => setIsEditing(true);
   const handleCancelEdit = () => setIsEditing(false);
-  const handleSuccessEdit = async (updatedAccommodation: Accommodation) => {
-    try {
-      const payload: UpdateAccommodationRequest = {
-        name: updatedAccommodation.name,
-        accommodationType: updatedAccommodation.accommodationType,
-        address: updatedAccommodation.address,
-        checkInDate: updatedAccommodation.checkInDate,
-        checkOutDate: updatedAccommodation.checkOutDate,
-        websiteUrl: updatedAccommodation.websiteUrl,
-        cost: typeof updatedAccommodation.cost === 'string' ? parseFloat(updatedAccommodation.cost) : updatedAccommodation.cost,
-        status: updatedAccommodation.status,
-        notes: updatedAccommodation.notes,
-      };
-      const saved = await accommodationService.update(updatedAccommodation.accommodationId, payload);
-      onEdit(saved);
-    } catch (error) {
-      // Optionally show error to user
-      console.error('Failed to update accommodation:', error);
-    } finally {
-      setIsEditing(false);
-    }
+  const handleSuccessEdit = (updatedAccommodation: Accommodation) => {
+    onEdit(updatedAccommodation);
+    setIsEditing(false);
   };
 
   if (isEditing) {
     return (
       <AccommodationForm
-        tripPointId={accommodation.tripPointId}
+        tripPointId={accommodation.tripPointId!}
         tripPointArrivalDate={accommodation.checkInDate}
         tripPointDepartureDate={accommodation.checkOutDate}
         onCancel={handleCancelEdit}

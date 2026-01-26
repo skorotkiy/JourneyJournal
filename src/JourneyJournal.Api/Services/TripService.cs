@@ -447,6 +447,22 @@ public class TripService
         return totalCost;
     }
 
+    /// <summary>
+    /// Recalculates trip total cost from a trip point ID.
+    /// </summary>
+    public async Task RecalculateTripTotalCostFromTripPointAsync(int tripPointId)
+    {
+        var tripId = await _context.TripPoints
+            .Where(tp => tp.TripPointId == tripPointId)
+            .Select(tp => tp.TripId)
+            .FirstOrDefaultAsync();
+
+        if (tripId != 0)
+        {
+            await RecalculateTripTotalCostAsync(tripId);
+        }
+    }
+
     // Private helper methods
 
     private static void ValidateTripDates(DateTime startDate, DateTime? endDate)
@@ -471,26 +487,5 @@ public class TripService
         {
             throw new ArgumentException("Rating must be between 1 and 5");
         }
-    }
-
-    public async Task<AccommodationDto?> UpdateAccommodationAsync(int accommodationId, UpdateAccommodationRequest request)
-    {
-        var accommodation = await _context.Accommodations.FindAsync(accommodationId);
-        if (accommodation == null)
-            return null;
-
-        accommodation.Name = request.Name;
-        accommodation.AccommodationType = request.AccommodationType;
-        accommodation.Address = request.Address;
-        accommodation.CheckInDate = DateTime.Parse(request.CheckInDate);
-        accommodation.CheckOutDate = DateTime.Parse(request.CheckOutDate);
-        accommodation.WebsiteUrl = request.WebsiteUrl;
-        accommodation.Cost = request.Cost;
-        accommodation.Status = request.Status;
-        accommodation.Notes = request.Notes;
-        accommodation.UpdatedAt = DateTime.UtcNow;
-
-        await _context.SaveChangesAsync();
-        return _mapper.Map<AccommodationDto>(accommodation);
     }
 }

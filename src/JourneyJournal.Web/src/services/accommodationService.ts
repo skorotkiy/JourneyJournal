@@ -6,4 +6,14 @@ export const accommodationService = {
     const response = await apiClient.put<Accommodation>(`/accommodations/${accommodationId}`, accommodation);
     return response.data;
   },
+  create: async (tripPointId: number, accommodation: Omit<Accommodation, 'accommodationId' | 'createdAt' | 'updatedAt'>): Promise<Accommodation> => {
+    const response = await apiClient.post<Accommodation>(`/accommodations`, {
+      ...accommodation,
+      tripPointId,
+    });
+    return response.data;
+  },
+  delete: async (accommodationId: number): Promise<void> => {
+    await apiClient.delete(`/accommodations/${accommodationId}`);
+  },
 };
