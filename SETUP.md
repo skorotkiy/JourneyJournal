@@ -30,25 +30,34 @@ The application uses SQLite. The database file is located at:
 src/JourneyJournal.Data/db/journeydb.sqlite
 ```
 
+
 ### Apply Migrations (if needed)
 
-From the root directory, run:
+
+You can apply migrations using the provided PowerShell script:
+
+```
+pwsh ./scripts/run-update-db.ps1
+```
+
+Or manually:
 
 ```
 dotnet build JourneyJournal.sln
 cd src/JourneyJournal.Data
 # Create DB and apply migrations
- dotnet ef database update --startup-project ../JourneyJournal.Api
+dotnet ef database update --startup-project ../JourneyJournal.Api
 ```
 
 ---
 
 ## 3. Launch the API
 
+
 From the root directory, run:
 
 ```
-pwsh ./run-api.ps1
+pwsh ./scripts/run-api.ps1
 ```
 
 Or manually:
@@ -64,10 +73,11 @@ The API will be available at:
 
 ## 4. Launch the Web Client
 
+
 From the root directory:
 
 ```
-pwsh ./run-web.ps1
+pwsh ./scripts/run-web.ps1
 ```
 
 Or manually:
@@ -90,13 +100,31 @@ The web client will be available at:
 
 ---
 
-## 6. Useful Scripts
 
-- `run-api.ps1` — Launches the backend API
-- `run-web.ps1` — Launches the frontend web client
-- `run-update-db.ps1` — Applies database migrations
+## 6. PowerShell Scripts
 
----
+
+**Important:** You should run `run-update-db.ps1` first to ensure the database and migrations are up to date before starting the API or web client.
+
+
+
+There are three helpful PowerShell scripts in the scripts folder to simplify common development tasks:
+
+- **run-update-db.ps1**
+	- Applies Entity Framework Core migrations to the SQLite database
+	- Usage: `pwsh ./scripts/run-update-db.ps1`
+
+- **run-api.ps1**
+	- Starts the backend API server (ASP.NET Core)
+	- Usage: `pwsh ./scripts/run-api.ps1`
+
+- **run-web.ps1**
+	- Starts the frontend React web client (Vite dev server)
+	- Usage: `pwsh ./scripts/run-web.ps1`
+
+You can run these scripts from the project root in any PowerShell terminal. They automate the most common setup and development steps for you.
+
+----
 
 ## 7. Additional Notes
 
