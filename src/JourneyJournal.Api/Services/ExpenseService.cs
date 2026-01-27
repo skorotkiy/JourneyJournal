@@ -30,17 +30,12 @@ public class ExpenseService
     /// </summary>
     public async Task<List<ExpenseDto>> GetExpensesByTripIdAsync(int tripId)
     {
-        // Verify trip exists and get its currency (trip currency is always defined)
-        var trip = await _context.Trips
+        // Get trip currency once (all expenses for a trip share the same currency)
+        var tripCurrency = await _context.Trips
             .Where(t => t.TripId == tripId)
             .AsNoTracking()
-            .Select(t => new { t.Currency })
-            .FirstOrDefaultAsync();
-
-        if (trip == null)
-        {
-            return new List<ExpenseDto>();
-        }
+            .Select(t => t.Currency)
+            .FirstAsync()!;
 
         var expenses = await _context.Expenses
             .Where(e => e.TripId == tripId)
@@ -51,7 +46,7 @@ public class ExpenseService
         var expenseDtos = _mapper.Map<List<ExpenseDto>>(expenses);
         
         // Set the same currency for all expenses in this trip
-        expenseDtos.ForEach(dto => dto.Currency = trip.Currency);
+        expenseDtos.ForEach(dto => dto.Currency = tripCurrency);
 
         return expenseDtos;
     }
