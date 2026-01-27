@@ -30,18 +30,25 @@ public class ExpenseService
     /// </summary>
     public async Task<List<ExpenseDto>> GetExpensesByTripIdAsync(int tripId)
     {
+        // Get trip currency once (all expenses for a trip share the same currency)
+        var tripCurrency = await _context.Trips
+            .Where(t => t.TripId == tripId)
+            .AsNoTracking()
+            .Select(t => t.Currency)
+            .FirstOrDefaultAsync();
+
         var expenses = await _context.Expenses
             .Where(e => e.TripId == tripId)
-            .Include(e => e.Trip)
             .OrderByDescending(e => e.ExpenseDate)
             .AsNoTracking()
             .ToListAsync();
 
         var expenseDtos = _mapper.Map<List<ExpenseDto>>(expenses);
-        // Set currency from trip
+        
+        // Set the same currency for all expenses in this trip
         foreach (var dto in expenseDtos)
         {
-            dto.Currency = expenses.First(e => e.ExpenseId == dto.ExpenseId).Trip.Currency;
+            dto.Currency = tripCurrency;
         }
 
         return expenseDtos;
@@ -65,9 +72,7 @@ public class ExpenseService
     public async Task<ExpenseDto> CreateExpenseAsync(int tripId, CreateExpenseRequest request)
     {
         // Verify trip exists
-        var tripExists = await _context.Trips
-            .AsNoTracking()
-            .AnyAsync(t => t.TripId == tripId);
+        var tripExists = await _context.Trips.AnyAsync(t => t.TripId == tripId);
         if (!tripExists)
         {
             throw new KeyNotFoundException($"Trip with ID {tripId} not found");

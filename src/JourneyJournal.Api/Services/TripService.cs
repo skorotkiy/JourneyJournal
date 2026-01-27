@@ -83,7 +83,6 @@ public class TripService
         {
             var otherDefaultTrips = await _context.Trips
                 .Where(t => t.IsDefault)
-                .AsNoTracking()
                 .ToListAsync();
 
             foreach (var otherTrip in otherDefaultTrips)
@@ -246,7 +245,6 @@ public class TripService
         {
             var otherDefaultTrips = await _context.Trips
                 .Where(t => t.TripId != tripId && t.IsDefault)
-                .AsNoTracking()
                 .ToListAsync();
     
             foreach (var otherTrip in otherDefaultTrips)
@@ -414,7 +412,6 @@ public class TripService
     {
         var tripId = await _context.TripPoints
             .Where(tp => tp.TripPointId == tripPointId)
-            .AsNoTracking()
             .Select(tp => tp.TripId)
             .FirstOrDefaultAsync();
 
