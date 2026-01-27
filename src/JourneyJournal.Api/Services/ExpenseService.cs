@@ -34,6 +34,7 @@ public class ExpenseService
             .Where(e => e.TripId == tripId)
             .Include(e => e.Trip)
             .OrderByDescending(e => e.ExpenseDate)
+            .AsNoTracking()
             .ToListAsync();
 
         var expenseDtos = _mapper.Map<List<ExpenseDto>>(expenses);
@@ -51,7 +52,9 @@ public class ExpenseService
     /// </summary>
     public async Task<ExpenseDto?> GetExpenseByIdAsync(int expenseId)
     {
-        var expense = await _context.Expenses.FindAsync(expenseId);
+        var expense = await _context.Expenses
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.ExpenseId == expenseId);
 
         return expense is not null ? _mapper.Map<ExpenseDto>(expense) : null;
     }
@@ -62,7 +65,9 @@ public class ExpenseService
     public async Task<ExpenseDto> CreateExpenseAsync(int tripId, CreateExpenseRequest request)
     {
         // Verify trip exists
-        var tripExists = await _context.Trips.AnyAsync(t => t.TripId == tripId);
+        var tripExists = await _context.Trips
+            .AsNoTracking()
+            .AnyAsync(t => t.TripId == tripId);
         if (!tripExists)
         {
             throw new KeyNotFoundException($"Trip with ID {tripId} not found");
@@ -151,6 +156,7 @@ public class ExpenseService
     {
         var expenses = await _context.Expenses
             .Where(e => e.TripId == tripId)
+            .AsNoTracking()
             .GroupBy(e => e.Category)
             .Select(g => new { Category = g.Key.ToString(), Total = g.Sum(e => e.Amount) })
             .ToListAsync();

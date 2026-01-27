@@ -31,8 +31,12 @@ public class RouteService
     /// </summary>
     public async Task<RouteDto> CreateRouteAsync(CreateRouteRequest request)
     {
-        var fromPoint = await _context.TripPoints.FindAsync(request.FromPointOrder);
-        var toPoint = await _context.TripPoints.FindAsync(request.ToPointOrder);
+        var fromPoint = await _context.TripPoints
+            .AsNoTracking()
+            .FirstOrDefaultAsync(tp => tp.TripPointId == request.FromPointOrder);
+        var toPoint = await _context.TripPoints
+            .AsNoTracking()
+            .FirstOrDefaultAsync(tp => tp.TripPointId == request.ToPointOrder);
 
         if (fromPoint == null)
             throw new KeyNotFoundException($"From TripPoint with ID {request.FromPointOrder} not found");
@@ -94,7 +98,9 @@ public class RouteService
         await _context.SaveChangesAsync();
 
         // Recalculate trip total cost
-        var fromPoint = await _context.TripPoints.FindAsync(route.FromPointId);
+        var fromPoint = await _context.TripPoints
+            .AsNoTracking()
+            .FirstOrDefaultAsync(tp => tp.TripPointId == route.FromPointId);
         if (fromPoint != null)
         {
             await _tripService.RecalculateTripTotalCostAsync(fromPoint.TripId);
@@ -112,7 +118,9 @@ public class RouteService
         if (route == null)
             return false;
 
-        var tripId = (await _context.TripPoints.FindAsync(route.FromPointId))?.TripId;
+        var tripId = (await _context.TripPoints
+            .AsNoTracking()
+            .FirstOrDefaultAsync(tp => tp.TripPointId == route.FromPointId))?.TripId;
 
         _context.Routes.Remove(route);
         await _context.SaveChangesAsync();

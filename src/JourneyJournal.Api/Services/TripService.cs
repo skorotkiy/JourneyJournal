@@ -41,6 +41,7 @@ public class TripService
                 .ThenInclude(tp => tp.PlacesToVisit)
             .Include(t => t.Expenses)
             .AsSplitQuery()
+            .AsNoTracking()
             .OrderBy(t => t.IsDefault ? 0 : 1)
             .ThenBy(t => t.StartDate)
             .ToListAsync();
@@ -63,6 +64,7 @@ public class TripService
             .Include(t => t.TripPoints)
                 .ThenInclude(tp => tp.PlacesToVisit)
             .Include(t => t.Expenses)
+            .AsNoTracking()
             .FirstOrDefaultAsync(t => t.TripId == tripId);
 
         return trip is not null ? _mapper.Map<TripDto>(trip) : null;
@@ -81,6 +83,7 @@ public class TripService
         {
             var otherDefaultTrips = await _context.Trips
                 .Where(t => t.IsDefault)
+                .AsNoTracking()
                 .ToListAsync();
 
             foreach (var otherTrip in otherDefaultTrips)
@@ -243,6 +246,7 @@ public class TripService
         {
             var otherDefaultTrips = await _context.Trips
                 .Where(t => t.TripId != tripId && t.IsDefault)
+                .AsNoTracking()
                 .ToListAsync();
     
             foreach (var otherTrip in otherDefaultTrips)
@@ -410,6 +414,7 @@ public class TripService
     {
         var tripId = await _context.TripPoints
             .Where(tp => tp.TripPointId == tripPointId)
+            .AsNoTracking()
             .Select(tp => tp.TripId)
             .FirstOrDefaultAsync();
 
