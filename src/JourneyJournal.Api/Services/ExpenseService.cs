@@ -46,10 +46,7 @@ public class ExpenseService
         var expenseDtos = _mapper.Map<List<ExpenseDto>>(expenses);
         
         // Set the same currency for all expenses in this trip
-        foreach (var dto in expenseDtos)
-        {
-            dto.Currency = tripCurrency;
-        }
+        expenseDtos.ForEach(dto => dto.Currency = tripCurrency);
 
         return expenseDtos;
     }
