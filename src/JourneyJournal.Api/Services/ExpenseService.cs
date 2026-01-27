@@ -33,9 +33,8 @@ public class ExpenseService
         // Get trip currency once (all expenses for a trip share the same currency)
         var tripCurrency = await _context.Trips
             .Where(t => t.TripId == tripId)
-            .AsNoTracking()
             .Select(t => t.Currency)
-            .FirstAsync()!;
+            .FirstAsync();
 
         var expenses = await _context.Expenses
             .Where(e => e.TripId == tripId)
@@ -46,7 +45,7 @@ public class ExpenseService
         var expenseDtos = _mapper.Map<List<ExpenseDto>>(expenses);
         
         // Set the same currency for all expenses in this trip
-        expenseDtos.ForEach(dto => dto.Currency = tripCurrency);
+        expenseDtos.ForEach(dto => dto.Currency = tripCurrency!);
 
         return expenseDtos;
     }

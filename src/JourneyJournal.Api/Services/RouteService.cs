@@ -31,20 +31,23 @@ public class RouteService
     /// </summary>
     public async Task<RouteDto> CreateRouteAsync(CreateRouteRequest request)
     {
-        var fromPoint = await _context.TripPoints
-            .AsNoTracking()
-            .FirstOrDefaultAsync(tp => tp.TripPointId == request.FromPointOrder);
-        var toPoint = await _context.TripPoints
-            .AsNoTracking()
-            .FirstOrDefaultAsync(tp => tp.TripPointId == request.ToPointOrder);
-
-        if (fromPoint == null)
+        // Check if both TripPoints exist
+        var fromPointExists = await _context.TripPoints.AnyAsync(tp => tp.TripPointId == request.FromPointOrder);
+        if (!fromPointExists)
             throw new KeyNotFoundException($"From TripPoint with ID {request.FromPointOrder} not found");
 
-        if (toPoint == null)
+        var toPointExists = await _context.TripPoints.AnyAsync(tp => tp.TripPointId == request.ToPointOrder);
+        if (!toPointExists)
             throw new KeyNotFoundException($"To TripPoint with ID {request.ToPointOrder} not found");
 
-        if (fromPoint.TripId != toPoint.TripId)
+        // Check if both points belong to the same trip
+        var tripIds = await _context.TripPoints
+            .Where(tp => tp.TripPointId == request.FromPointOrder || tp.TripPointId == request.ToPointOrder)
+            .Select(tp => tp.TripId)
+            .Distinct()
+            .ToListAsync();
+
+        if (tripIds.Count != 1)
             throw new ArgumentException("Both TripPoints must belong to the same trip");
 
         if (request.FromPointOrder == request.ToPointOrder)
@@ -70,7 +73,7 @@ public class RouteService
         await _context.SaveChangesAsync();
 
         // Recalculate trip total cost
-        await _tripService.RecalculateTripTotalCostAsync(fromPoint.TripId);
+        await _tripService.RecalculateTripTotalCostAsync(tripIds[0]);
 
         return _mapper.Map<RouteDto>(route);
     }
@@ -98,12 +101,13 @@ public class RouteService
         await _context.SaveChangesAsync();
 
         // Recalculate trip total cost
-        var fromPoint = await _context.TripPoints
-            .AsNoTracking()
-            .FirstOrDefaultAsync(tp => tp.TripPointId == route.FromPointId);
-        if (fromPoint != null)
+        var tripId = await _context.TripPoints
+            .Where(tp => tp.TripPointId == route.FromPointId)
+            .Select(tp => tp.TripId)
+            .FirstOrDefaultAsync();
+        if (tripId != 0)
         {
-            await _tripService.RecalculateTripTotalCostAsync(fromPoint.TripId);
+            await _tripService.RecalculateTripTotalCostAsync(tripId);
         }
 
         return _mapper.Map<RouteDto>(route);
@@ -118,17 +122,18 @@ public class RouteService
         if (route == null)
             return false;
 
-        var tripId = (await _context.TripPoints
-            .AsNoTracking()
-            .FirstOrDefaultAsync(tp => tp.TripPointId == route.FromPointId))?.TripId;
+        var tripId = await _context.TripPoints
+            .Where(tp => tp.TripPointId == route.FromPointId)
+            .Select(tp => tp.TripId)
+            .FirstOrDefaultAsync();
 
         _context.Routes.Remove(route);
         await _context.SaveChangesAsync();
 
         // Recalculate trip total cost
-        if (tripId.HasValue)
+        if (tripId != 0)
         {
-            await _tripService.RecalculateTripTotalCostAsync(tripId.Value);
+            await _tripService.RecalculateTripTotalCostAsync(tripId);
         }
 
         return true;
