@@ -348,6 +348,7 @@ public class TripService
             foreach (var otherTrip in otherTrips)
             {
                 otherTrip.IsDefault = false;
+                otherTrip.UpdatedAt = DateTime.UtcNow;
             }
             trip.IsDefault = true;
             trip.UpdatedAt = DateTime.UtcNow;
