@@ -205,32 +205,40 @@ const TripDetailPage = () => {
       {isEditing ? (
         <Paper elevation={3} sx={{ px: 4, pt: 2, pb: 2, mt: 2 }}>
             <TripForm
-            initialData={{
-              ...trip,
-              startDate: trip.startDate ? DateHelper.formatDateShort(trip.startDate) : '',
-              endDate: trip.endDate ? DateHelper.formatDateShort(trip.endDate) : '',
-            }}
-            loading={false}
-            errors={{}}
-            onSubmit={async (updated: any) => {
-              try {
-                const payload = { ...updated };
-                // Ensure tripPoints are transformed into backend shape
-                if (updated && Array.isArray(updated.tripPoints)) {
-                  payload.tripPoints = transformTripPointsForBackend(updated.tripPoints);
-                } else {
-                  payload.tripPoints = transformTripPointsForBackend(trip?.tripPoints || []);
+              initialData={{
+                ...trip,
+                startDate: trip.startDate ? DateHelper.formatDateShort(trip.startDate) : '',
+                endDate: trip.endDate ? DateHelper.formatDateShort(trip.endDate) : '',
+              }}
+              loading={false}
+              errors={{}}
+              onSubmit={async (updated: any) => {
+                try {
+                  const payload = { ...updated };
+                  // Ensure tripPoints are transformed into backend shape
+                  if (updated && Array.isArray(updated.tripPoints)) {
+                    payload.tripPoints = transformTripPointsForBackend(updated.tripPoints);
+                  } else {
+                    payload.tripPoints = transformTripPointsForBackend(trip?.tripPoints || []);
+                  }
+                  const updatedTrip = await tripService.update(trip!.tripId.toString(), payload);
+                  setTrip(updatedTrip);
+                  setIsEditing(false);
+                  setError(null);
+                } catch (err) {
+                  setError('Failed to update trip. Please try again.');
                 }
-                const updatedTrip = await tripService.update(trip!.tripId.toString(), payload);
-                setTrip(updatedTrip);
-                setIsEditing(false);
-                setError(null);
-              } catch (err) {
-                setError('Failed to update trip. Please try again.');
-              }
-            }}
-            onCancel={handleCancelEdit}
-          />
+              }}
+              onCancel={handleCancelEdit}
+              onDelete={async () => {
+                try {
+                  await tripService.delete(trip!.tripId.toString());
+                  navigate('/trips');
+                } catch (err) {
+                  // Optionally handle error silently or log
+                }
+              }}
+            />
         </Paper>
       ) : (
         <>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Dialog, DialogTitle, DialogActions } from '@mui/material';
 import { Box, Stack, TextField, Button, FormControlLabel, Checkbox, Typography } from '@mui/material';
 import {
   textFieldSx,
@@ -8,7 +9,9 @@ import {
   notesFieldSx,
   buttonOutlinedSx,
   buttonContainedSx,
+  buttonDeleteSx,
 } from '../styles/formStyles';
+import DeleteIcon from '@mui/icons-material/Delete';
 import type { Trip } from '../types/trip';
 
 export interface TripFormProps {
@@ -17,6 +20,7 @@ export interface TripFormProps {
   errors?: Record<string, string>;
   onSubmit: (data: any) => void;
   onCancel: () => void;
+  onDelete?: () => void;
 }
 
 const defaultFormData = {
@@ -37,8 +41,11 @@ const TripForm: React.FC<TripFormProps> = ({
   errors = {},
   onSubmit,
   onCancel,
+  onDelete,
 }) => {
   const [formData, setFormData] = useState({ ...defaultFormData, ...initialData });
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Update formData when initialData changes (for edit mode)
   React.useEffect(() => {
@@ -182,7 +189,57 @@ const TripForm: React.FC<TripFormProps> = ({
           />
         </Box>
         {errors.submit && <Typography color="error">{errors.submit}</Typography>}
-        <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'flex-end', mt: 0.5 }}>
+        <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'flex-end', mt: 0.5, alignItems: 'center' }}>
+          {onDelete && (
+            <>
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<DeleteIcon />}
+                onClick={() => setShowDeleteDialog(true)}
+                disabled={loading}
+                size="small"
+                sx={buttonDeleteSx}
+              >
+                Delete
+              </Button>
+              <Dialog open={showDeleteDialog} onClose={() => setShowDeleteDialog(false)} maxWidth="xs" fullWidth>
+                <DialogTitle sx={{ fontSize: '1rem', fontWeight: 700, pb: 1 }}>
+                  Delete this trip?
+                </DialogTitle>
+                <DialogActions sx={{ px: 2, pb: 2 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => setShowDeleteDialog(false)}
+                    disabled={deleting}
+                    sx={{ fontSize: '0.7rem', py: 0.4, px: 1.2 }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    size="small"
+                    onClick={async () => {
+                      setDeleting(true);
+                      try {
+                        await onDelete?.();
+                        setShowDeleteDialog(false);
+                      } finally {
+                        setDeleting(false);
+                      }
+                    }}
+                    disabled={deleting}
+                    sx={{ fontSize: '0.75rem', py: 0.4, px: 1.4 }}
+                  >
+                    {deleting ? 'Deleting...' : 'Delete'}
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </>
+          )}
+          <Box sx={{ flexGrow: 1 }} />
           <Button
             variant="outlined"
             onClick={onCancel}

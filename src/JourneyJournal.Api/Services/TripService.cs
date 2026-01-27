@@ -333,11 +333,29 @@ public class TripService
     /// </summary>
     public async Task<bool> DeleteTripAsync(int tripId)
     {
-        var trip = await _context.Trips.FindAsync(tripId);
+        // Load trip with TripPoints and their Routes
+        var trip = await _context.Trips
+            .Include(t => t.TripPoints)
+                .ThenInclude(tp => tp.RoutesFrom)
+            .Include(t => t.TripPoints)
+                .ThenInclude(tp => tp.RoutesTo)
+            .FirstOrDefaultAsync(t => t.TripId == tripId);
 
         if (trip is null)
         {
             return false;
+        }
+
+        // Collect all Route entities associated with this trip's TripPoints
+        var allRoutes = trip.TripPoints
+            .SelectMany(tp => tp.RoutesFrom)
+            .Concat(trip.TripPoints.SelectMany(tp => tp.RoutesTo))
+            .Distinct()
+            .ToList();
+
+        if (allRoutes.Count > 0)
+        {
+            _context.Routes.RemoveRange(allRoutes);
         }
 
         _context.Trips.Remove(trip);
