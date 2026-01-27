@@ -69,3 +69,29 @@ export const buttonContainedSx: SxProps<Theme> = {
   '&:hover': { backgroundColor: '#bbdefb' },
   border: '1px solid #90caf9',
 };
+
+export const buttonDeleteSx: SxProps<Theme> = {
+  fontSize: '0.75rem',
+  py: 0.4,
+  px: 1.4,
+};
+
+// Common spacing constants
+export const FORM_SPACING = 2.5;
+export const SECTION_SPACING = 1.5;
+export const ELEMENT_GAP = 1.5;
+export const BORDER_RADIUS = 2;
+
+// Common component styles
+export const formPaperSx: SxProps<Theme> = {
+  p: FORM_SPACING,
+  borderRadius: BORDER_RADIUS,
+  backgroundColor: 'background.paper',
+};
+
+export const summaryPaperSx: SxProps<Theme> = {
+  p: FORM_SPACING,
+  mb: SECTION_SPACING,
+  borderRadius: BORDER_RADIUS,
+  backgroundColor: 'background.paper',
+};

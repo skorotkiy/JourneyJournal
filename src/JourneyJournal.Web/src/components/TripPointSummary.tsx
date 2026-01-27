@@ -19,6 +19,11 @@ import AccommodationSummary from './AccommodationSummary';
 import RouteForm from './RouteForm';
 import RouteSummary from './RouteSummary';
 import { DateHelper } from '../utils/DateHelper';
+import {
+  buttonOutlinedSx,
+  buttonContainedSx,
+  buttonDeleteSx
+} from '../styles/formStyles';
 
 interface TripPointSummaryProps {
   tripPoint: TripPoint;
@@ -72,9 +77,9 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
   };
 
   const handleRemoveClick = () => {
-    // TODO: Check if there are routes linked to this trip point
-    const hasRoutes = false; // Replace with actual check
-    
+    // Check if there are routes linked to this trip point
+    const hasRoutes = (tripPoint.routesFrom || []).length > 0 || (tripPoint.routesTo || []).length > 0;
+
     if (hasRoutes) {
       setShowRouteWarning(true);
       setShowDeleteConfirm(false);
@@ -92,12 +97,10 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
   const handleConfirmDelete = async () => {
     setDeleting(true);
     try {
-      // TODO: Implement API call to delete trip point
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
       setShowDeleteConfirm(false);
       onRemove();
     } catch (error) {
+      // Error handling is done by parent component
     } finally {
       setDeleting(false);
     }
@@ -162,16 +165,13 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
 
     setSaving(true);
     try {
-      // TODO: Implement API call to update trip point
       const updatedTripPoint = {
         ...tripPoint,
         ...formData,
         arrivalDate: formData.arrivalDate,
         departureDate: formData.departureDate,
       };
-      
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+
       onEdit(updatedTripPoint);
       setIsEditing(false);
     } catch (error) {
@@ -272,7 +272,7 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
                 onClick={handleCancelEdit}
                 disabled={saving}
                 size="small"
-                sx={{ fontSize: '0.7rem', py: 0.4, px: 1.2 }}
+                sx={buttonOutlinedSx}
               >
                 Cancel
               </Button>
@@ -281,15 +281,7 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
                 onClick={handleSubmit}
                 disabled={saving}
                 size="small"
-                sx={{
-                  fontSize: '0.7rem',
-                  py: 0.4,
-                  px: 1.2,
-                  backgroundColor: '#e3f2fd',
-                  color: '#1976d2',
-                  '&:hover': { backgroundColor: '#bbdefb' },
-                  border: '1px solid #90caf9',
-                }}
+                sx={buttonContainedSx}
               >
                 {saving ? 'Saving...' : 'Save'}
               </Button>
@@ -331,7 +323,7 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
             size="small"
             onClick={handleCancelDelete}
             disabled={deleting}
-            sx={{ fontSize: '0.7rem', py: 0.4, px: 1.2 }}
+            sx={buttonOutlinedSx}
           >
             Cancel
           </Button>
@@ -341,7 +333,7 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
             size="small"
             onClick={handleConfirmDelete}
             disabled={deleting}
-            sx={{ fontSize: '0.75rem', py: 0.4, px: 1.4 }}
+            sx={buttonDeleteSx}
           >
             {deleting ? 'Deleting...' : 'Delete'}
           </Button>
@@ -365,7 +357,7 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
             onClick={handleRemoveClick}
             fullWidth
             size="small"
-            sx={{ fontSize: '0.75rem', py: 0.4, px: 1.4 }}
+            sx={buttonDeleteSx}
           >
             Delete
           </Button>
@@ -375,15 +367,7 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
             onClick={handleEditClick}
             fullWidth
             size="small"
-            sx={{
-              fontSize: '0.7rem',
-              py: 0.4,
-              px: 1.2,
-              backgroundColor: '#e3f2fd',
-              color: '#1976d2',
-              '&:hover': { backgroundColor: '#bbdefb' },
-              border: '1px solid #90caf9',
-            }}
+            sx={buttonContainedSx}
           >
             Edit
           </Button>
@@ -400,14 +384,8 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
               size="small"
               onClick={() => setShowAccommodationForm(true)}
               sx={{
-                fontSize: '0.7rem',
-                py: 0.4,
-                px: 1.2,
+                ...buttonContainedSx,
                 mb: 2,
-                backgroundColor: '#e3f2fd',
-                color: '#1976d2',
-                '&:hover': { backgroundColor: '#bbdefb' },
-                border: '1px solid #90caf9',
               }}
             >
               Add Accommodation
@@ -475,14 +453,8 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
                   size="small"
                   onClick={() => setShowRouteForm(true)}
                   sx={{
-                    fontSize: '0.7rem',
-                    py: 0.4,
-                    px: 1.2,
+                    ...buttonContainedSx,
                     mb: 2,
-                    backgroundColor: '#e3f2fd',
-                    color: '#1976d2',
-                    '&:hover': { backgroundColor: '#bbdefb' },
-                    border: '1px solid #90caf9',
                   }}
                 >
                   Add Route
@@ -529,13 +501,7 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
               size="small"
               onClick={onAddNextPoint}
               sx={{
-                fontSize: '0.7rem',
-                py: 0.4,
-                px: 1.2,
-                backgroundColor: '#e3f2fd',
-                color: '#1976d2',
-                '&:hover': { backgroundColor: '#bbdefb' },
-                border: '1px solid #90caf9',
+                ...buttonContainedSx,
                 minWidth: 0,
                 flex: 1,
               }}

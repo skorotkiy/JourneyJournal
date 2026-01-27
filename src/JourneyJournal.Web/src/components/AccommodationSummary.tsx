@@ -22,6 +22,7 @@ import {
 import type { Accommodation } from '../types/accommodation';
 import { AccommodationType, AccommodationStatus } from '../types/accommodation';
 import { DateHelper } from '../utils/DateHelper';
+import { summaryPaperSx } from '../styles/formStyles';
 
 interface AccommodationSummaryProps {
   accommodation: Accommodation;
@@ -145,7 +146,7 @@ const AccommodationSummary = ({ accommodation, onEdit, onRemove }: Accommodation
         </DialogActions>
       </Dialog>
 
-      <Paper elevation={1} sx={{ p: 2.5, mb: 1.5, backgroundColor: 'background.paper', borderRadius: 2 }}>
+      <Paper sx={summaryPaperSx}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Box>
             <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>

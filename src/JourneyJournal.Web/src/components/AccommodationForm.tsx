@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -17,6 +17,8 @@ import {
   notesFieldSx,
   buttonOutlinedSx,
   buttonContainedSx,
+  ELEMENT_GAP,
+  formPaperSx
 } from '../styles/formStyles';
 import type { Accommodation } from '../types/accommodation';
 import { accommodationService } from '../services/accommodationService';
@@ -33,7 +35,6 @@ interface AccommodationFormProps {
   initialData?: Partial<Accommodation>;
 }
 
-import { useEffect } from 'react';
 import { DateHelper } from '../utils/DateHelper';
 const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartureDate, onCancel, onSuccess, label, initialData }: AccommodationFormProps) => {
   const getInitialFormData = () => ({
@@ -129,13 +130,13 @@ const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartu
   };
 
   return (
-    <Paper elevation={1} sx={{ p: 2.5, borderRadius: 2, backgroundColor: 'background.paper', mb: 2 }}>
+    <Paper elevation={1} sx={{ ...formPaperSx, mb: 2 }}>
       <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
         {label || 'Add Accommodation'}
       </Typography>
       
       <Box component="form" onSubmit={handleSubmit}>
-        <Stack spacing={2}>
+        <Stack spacing={ELEMENT_GAP}>
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <TextField
               required

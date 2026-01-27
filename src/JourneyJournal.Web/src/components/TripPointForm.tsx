@@ -73,12 +73,7 @@ const TripPointForm = ({ tripId: _tripId, tripStartDate, tripEndDate, prevTripPo
     setLoading(true);
     setErrors({});
     try {
-      // TODO: Implement API call to create trip point
-      // Simulate success for now
-      setTimeout(() => {
-        setLoading(false);
-        onSuccess({ ...formData });
-      }, 500);
+      onSuccess({ ...formData });
     } catch (err: any) {
       setLoading(false);
       setErrors({ submit: err.message || 'Failed to add trip point' });

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -21,7 +21,9 @@ import {
   amountFieldSx,
   notesFieldSx,
   buttonOutlinedSx,
-  buttonContainedSx
+  buttonContainedSx,
+  ELEMENT_GAP,
+  formPaperSx
 } from '../styles/formStyles';
 
 interface RouteFormProps {
@@ -37,7 +39,6 @@ interface RouteFormProps {
   initialData?: Partial<Route>;
 }
 
-import { useEffect } from 'react';
 const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, defaultDepartureDate, defaultArrivalDate, onCancel, onSuccess, editMode = false, initialData }: RouteFormProps) => {
   const routeName = `${fromPointName} → ${toPointName}`;
   const getInitialFormData = () => ({
@@ -123,7 +124,7 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
   };
 
   return (
-    <Paper elevation={1} sx={{ p: 2.5, borderRadius: 2, backgroundColor: 'background.paper' }}>
+    <Paper elevation={1} sx={formPaperSx}>
       <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
         {editMode ? 'Edit route' : 'Add route'}
       </Typography>
@@ -146,7 +147,7 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
       </Box>
       
       <Box component="form" onSubmit={handleSubmit}>
-        <Stack spacing={2}>
+        <Stack spacing={ELEMENT_GAP}>
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'nowrap' }}>
             <TextField
               select

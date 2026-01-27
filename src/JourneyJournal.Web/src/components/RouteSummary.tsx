@@ -23,6 +23,7 @@ import { TransportationType } from '../types/route';
 import RouteForm from './RouteForm';
 import { routeService } from '../services/routeService';
 import { DateHelper } from '../utils/DateHelper';
+import { summaryPaperSx } from '../styles/formStyles';
 
 interface RouteSummaryProps {
   route: Route;
@@ -141,7 +142,7 @@ const RouteSummary = ({ route, fromPointName, toPointName, onEdit, onRemove }: R
         </DialogActions>
       </Dialog>
 
-      <Paper elevation={1} sx={{ p: 2.5, mb: 1.5, backgroundColor: 'background.paper', borderRadius: 2 }}>
+      <Paper sx={summaryPaperSx}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Box>
             <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
