@@ -35,6 +35,7 @@ const defaultFormData = {
 };
 
 
+
 const TripForm: React.FC<TripFormProps> = ({
   initialData = {},
   loading = false,
@@ -46,14 +47,19 @@ const TripForm: React.FC<TripFormProps> = ({
   const [formData, setFormData] = useState({ ...defaultFormData, ...initialData });
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [defaultCheckboxClicked, setDefaultCheckboxClicked] = useState(false);
 
   // Update formData when initialData changes (for edit mode)
   React.useEffect(() => {
     setFormData({ ...defaultFormData, ...initialData });
+    setDefaultCheckboxClicked(false);
   }, [JSON.stringify(initialData)]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
+    if (name === 'isDefault' && checked) {
+      setDefaultCheckboxClicked(true);
+    }
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
@@ -121,17 +127,6 @@ const TripForm: React.FC<TripFormProps> = ({
             sx={amountFieldSx}
           />
           <TextField
-            label="Spent"
-            name="totalCost"
-            type="number"
-            value={formData.totalCost}
-            onChange={handleChange}
-            inputProps={{ min: 0, step: 0.01 }}
-            placeholder="Actual"
-            size="small"
-            sx={amountFieldSx}
-          />
-          <TextField
             label="Currency"
             name="currency"
             value={formData.currency}
@@ -188,13 +183,15 @@ const TripForm: React.FC<TripFormProps> = ({
             componentsProps={{ typography: { variant: 'body2' } }}
           />
         </Box>
-        <Box sx={{ minHeight: 28 }}>
-          {formData.isDefault && (
-            <Typography variant="body2" color="warning.main" sx={{ ml: 0.5, mt: 0.5 }}>
-              Warning: If there is already a default trip, it will be changed to this one.
+        <Box sx={{ m: 0, p: 0, display: 'block', lineHeight: 1, mt: '0 !important' }}>
+          {formData.isDefault && defaultCheckboxClicked && (
+            <Typography
+              variant="body2"
+              color="warning.main"
+              sx={{ mt: 0, mb: 0, pt: 0, pb: 0, lineHeight: 1, display: 'block', m: 0 }}>
+              If another trip is currently set as default, it will be replaced by this one.
             </Typography>
           )}
-        </Box>
         </Box>
         {errors.submit && <Typography color="error">{errors.submit}</Typography>}
         <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'flex-end', mt: 0.5, alignItems: 'center' }}>

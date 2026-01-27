@@ -79,17 +79,14 @@ public class TripService
         // Validate business rules
         ValidateTripDates(request.StartDate, request.EndDate);
 
-        // If setting this trip as default, turn off default on all other trips
+        // If setting this trip as default, ensure all other trips are not default
         if (request.IsDefault)
         {
-            var otherDefaultTrips = await _context.Trips
-                .Where(t => t.IsDefault)
-                .ToListAsync();
-
-            foreach (var otherTrip in otherDefaultTrips)
+            var otherDefaultTrip = await _context.Trips.FirstOrDefaultAsync(t => t.IsDefault);
+            if (otherDefaultTrip is not null)
             {
-                otherTrip.IsDefault = false;
-                otherTrip.UpdatedAt = DateTime.UtcNow;
+                otherDefaultTrip.IsDefault = false;
+                otherDefaultTrip.UpdatedAt = DateTime.UtcNow;
             }
         }
 
@@ -102,7 +99,6 @@ public class TripService
             IsDefault = request.IsDefault,
             Description = request.Description,
             PlannedCost = request.PlannedCost,
-            TotalCost = request.TotalCost,
             Currency = request.Currency,
             CreatedAt = DateTime.UtcNow
         };
@@ -215,19 +211,11 @@ public class TripService
     /// <summary>
     /// Updates an existing trip with all related data.
     /// </summary>
+
+    // New version: only updates trip properties and default flag, no trip point reconstruction
     public async Task<TripDto> UpdateTripAsync(int tripId, UpdateTripRequest request)
     {
-        var trip = await _context.Trips
-            .Include(t => t.TripPoints)
-                .ThenInclude(tp => tp.Accommodations)
-            .Include(t => t.TripPoints)
-                .ThenInclude(tp => tp.RoutesFrom)
-            .Include(t => t.TripPoints)
-                .ThenInclude(tp => tp.RoutesTo)
-            .Include(t => t.TripPoints)
-                .ThenInclude(tp => tp.PlacesToVisit)
-            .FirstOrDefaultAsync(t => t.TripId == tripId);
-
+        var trip = await _context.Trips.FirstOrDefaultAsync(t => t.TripId == tripId);
         if (trip is null)
         {
             throw new KeyNotFoundException($"Trip with ID {tripId} not found");
@@ -235,101 +223,31 @@ public class TripService
 
         ValidateTripDates(request.StartDate, request.EndDate);
 
-        // Update trip properties
         trip.Name = request.Name;
         trip.StartDate = request.StartDate;
         trip.EndDate = request.EndDate;
         trip.IsCompleted = request.IsCompleted;
         trip.IsDefault = request.IsDefault;
 
-        // If setting this trip as default, turn off default on all other trips
         if (request.IsDefault)
         {
-            var otherDefaultTrips = await _context.Trips
-                .Where(t => t.TripId != tripId && t.IsDefault)
-                .ToListAsync();
-    
-            foreach (var otherTrip in otherDefaultTrips)
+            var otherDefaultTrip = await _context.Trips.FirstOrDefaultAsync(t => t.TripId != tripId && t.IsDefault);
+            if (otherDefaultTrip is not null)
             {
-                otherTrip.IsDefault = false;
-                otherTrip.UpdatedAt = DateTime.UtcNow;
+                otherDefaultTrip.IsDefault = false;
+                otherDefaultTrip.UpdatedAt = DateTime.UtcNow;
             }
         }
+
+
         trip.Description = request.Description;
         trip.PlannedCost = request.PlannedCost;
-        trip.TotalCost = request.TotalCost;
         trip.Currency = request.Currency;
         trip.UpdatedAt = DateTime.UtcNow;
-
-        // Remove all existing trip points (cascade will handle related data)
-        _context.TripPoints.RemoveRange(trip.TripPoints);
-
-        // Recreate trip points with related data
-        trip.TripPoints.Clear();
-        // Note: UpdateTripPointRequest does not have Routes, so we cannot recreate routes here.
-        foreach (var pointRequest in request.TripPoints.OrderBy(p => p.Order))
-        {
-            var tripPoint = new TripPoint
-            {
-                TripId = tripId,
-                Name = pointRequest.Name,
-                Order = pointRequest.Order,
-                ArrivalDate = pointRequest.ArrivalDate,
-                DepartureDate = pointRequest.DepartureDate,
-                Notes = pointRequest.Notes,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            // Add accommodations
-            foreach (var accRequest in pointRequest.Accommodations)
-            {
-                ValidateAccommodationDates(accRequest.CheckInDate, accRequest.CheckOutDate);
-
-                tripPoint.Accommodations.Add(new Accommodation
-                {
-                    Name = accRequest.Name,
-                    AccommodationType = accRequest.AccommodationType,
-                    Address = accRequest.Address,
-                    CheckInDate = accRequest.CheckInDate,
-                    CheckOutDate = accRequest.CheckOutDate,
-                    WebsiteUrl = accRequest.WebsiteUrl,
-                    Cost = accRequest.Cost,
-                    Status = accRequest.Status,
-                    Notes = accRequest.Notes,
-                    CreatedAt = DateTime.UtcNow
-                });
-            }
-
-            // Add places to visit
-            foreach (var placeRequest in pointRequest.PlacesToVisit)
-            {
-                ValidateRating(placeRequest.Rating);
-
-                tripPoint.PlacesToVisit.Add(new PlaceToVisit
-                {
-                    Name = placeRequest.Name,
-                    Category = placeRequest.Category,
-                    Address = placeRequest.Address,
-                    Description = placeRequest.Description,
-                    Price = placeRequest.Price,
-                    WebsiteUrl = placeRequest.WebsiteUrl,
-                    UsefulLinks = placeRequest.UsefulLinks,
-                    Order = placeRequest.Order,
-                    Rating = placeRequest.Rating,
-                    VisitDate = placeRequest.VisitDate,
-                    VisitStatus = placeRequest.VisitStatus,
-                    AfterVisitNotes = placeRequest.AfterVisitNotes,
-                    CreatedAt = DateTime.UtcNow
-                });
-            }
-
-            trip.TripPoints.Add(tripPoint);
-        }
 
         await _context.SaveChangesAsync();
 
         return await GetTripByIdAsync(tripId) ?? throw new InvalidOperationException("Failed to retrieve updated trip");
-
     }
 
     /// <summary>
@@ -345,12 +263,12 @@ public class TripService
 
         if (!trip.IsDefault)
         {
-            // Unset IsDefault for all other trips
-            var otherTrips = await _context.Trips.Where(t => t.TripId != tripId && t.IsDefault).ToListAsync();
-            foreach (var otherTrip in otherTrips)
+            // Unset IsDefault for the other default trip if it exists
+            var otherDefaultTrip = await _context.Trips.FirstOrDefaultAsync(t => t.TripId != tripId && t.IsDefault);
+            if (otherDefaultTrip is not null)
             {
-                otherTrip.IsDefault = false;
-                otherTrip.UpdatedAt = DateTime.UtcNow;
+                otherDefaultTrip.IsDefault = false;
+                otherDefaultTrip.UpdatedAt = DateTime.UtcNow;
             }
             trip.IsDefault = true;
             trip.UpdatedAt = DateTime.UtcNow;
@@ -473,10 +391,12 @@ public class TripService
             .Select(tp => tp.TripId)
             .FirstOrDefaultAsync();
 
-        if (tripId != 0)
+        if (tripId == 0)
         {
-            await RecalculateTripTotalCostAsync(tripId);
+            throw new KeyNotFoundException($"TripPoint with ID {tripPointId} not found or not associated with a trip");
         }
+
+        await RecalculateTripTotalCostAsync(tripId);
     }
 
     // Private helper methods
