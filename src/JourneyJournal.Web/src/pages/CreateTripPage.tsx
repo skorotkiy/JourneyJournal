@@ -32,8 +32,13 @@ function CreateTripPage() {
 
   return (
     <Box sx={{ maxWidth: 500, mx: 'auto', py: 4 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h5" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
+      <Paper elevation={3} sx={{ px: 4, pt: 2, pb: 2, mt: 2 }}>
+        <Typography
+          variant="subtitle1"
+          component="h1"
+          gutterBottom
+          sx={{ fontWeight: 600, color: '#1976d2', mb: 1, fontSize: '1.05rem' }}
+        >
           Start the Journey
         </Typography>
         <TripForm
