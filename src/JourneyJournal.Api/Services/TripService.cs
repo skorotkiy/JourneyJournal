@@ -259,9 +259,100 @@ public class TripService
         trip.Currency = request.Currency;
         trip.UpdatedAt = DateTime.UtcNow;
 
-        // Only update trip-level properties; do not remove or recreate TripPoints or related data
+        // Remove all existing trip points (cascade will handle related data)
+        _context.TripPoints.RemoveRange(trip.TripPoints);
+
+        // Recreate trip points with related data
+        trip.TripPoints.Clear();
+        // Note: UpdateTripPointRequest does not have Routes, so we cannot recreate routes here.
+        foreach (var pointRequest in request.TripPoints.OrderBy(p => p.Order))
+        {
+            var tripPoint = new TripPoint
+            {
+                TripId = tripId,
+                Name = pointRequest.Name,
+                Order = pointRequest.Order,
+                ArrivalDate = pointRequest.ArrivalDate,
+                DepartureDate = pointRequest.DepartureDate,
+                Notes = pointRequest.Notes,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            // Add accommodations
+            foreach (var accRequest in pointRequest.Accommodations)
+            {
+                ValidateAccommodationDates(accRequest.CheckInDate, accRequest.CheckOutDate);
+
+                tripPoint.Accommodations.Add(new Accommodation
+                {
+                    Name = accRequest.Name,
+                    AccommodationType = accRequest.AccommodationType,
+                    Address = accRequest.Address,
+                    CheckInDate = accRequest.CheckInDate,
+                    CheckOutDate = accRequest.CheckOutDate,
+                    WebsiteUrl = accRequest.WebsiteUrl,
+                    Cost = accRequest.Cost,
+                    Status = accRequest.Status,
+                    Notes = accRequest.Notes,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            // Add places to visit
+            foreach (var placeRequest in pointRequest.PlacesToVisit)
+            {
+                ValidateRating(placeRequest.Rating);
+
+                tripPoint.PlacesToVisit.Add(new PlaceToVisit
+                {
+                    Name = placeRequest.Name,
+                    Category = placeRequest.Category,
+                    Address = placeRequest.Address,
+                    Description = placeRequest.Description,
+                    Price = placeRequest.Price,
+                    WebsiteUrl = placeRequest.WebsiteUrl,
+                    UsefulLinks = placeRequest.UsefulLinks,
+                    Order = placeRequest.Order,
+                    Rating = placeRequest.Rating,
+                    VisitDate = placeRequest.VisitDate,
+                    VisitStatus = placeRequest.VisitStatus,
+                    AfterVisitNotes = placeRequest.AfterVisitNotes,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            trip.TripPoints.Add(tripPoint);
+        }
+
         await _context.SaveChangesAsync();
+
         return await GetTripByIdAsync(tripId) ?? throw new InvalidOperationException("Failed to retrieve updated trip");
+
+    }
+
+    /// <summary>
+    /// Sets the specified trip as default and unsets IsDefault for all other trips.
+    /// </summary>
+    public async Task SetTripAsDefaultAsync(int tripId)
+    {
+        var trip = await _context.Trips.FirstOrDefaultAsync(t => t.TripId == tripId);
+        if (trip is null)
+        {
+            throw new KeyNotFoundException($"Trip with ID {tripId} not found");
+        }
+
+        if (!trip.IsDefault)
+        {
+            // Unset IsDefault for all other trips
+            var otherTrips = await _context.Trips.Where(t => t.TripId != tripId && t.IsDefault).ToListAsync();
+            foreach (var otherTrip in otherTrips)
+            {
+                otherTrip.IsDefault = false;
+            }
+            trip.IsDefault = true;
+            trip.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
     }
 
     /// <summary>
