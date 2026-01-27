@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
 import {
   Box,
   Paper,
@@ -8,6 +9,13 @@ import {
   Stack,
   Alert,
 } from '@mui/material';
+import {
+  textFieldSx,
+  dateFieldSx,
+  notesFieldSx,
+  buttonOutlinedSx,
+  buttonContainedSx
+} from '../styles/formStyles';
 
 interface TripPointFormProps {
   tripId: number;
@@ -29,6 +37,18 @@ const TripPointForm = ({ tripId: _tripId, tripStartDate, tripEndDate, prevTripPo
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Ensure arrival and departure dates are always initialized correctly if props change
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      arrivalDate: prevTripPointDepartureDate
+        ? DateHelper.formatDateShort(prevTripPointDepartureDate)
+        : (tripStartDate ? DateHelper.formatDateShort(tripStartDate) : ''),
+      departureDate: tripEndDate ? DateHelper.formatDateShort(tripEndDate) : '',
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prevTripPointDepartureDate, tripStartDate, tripEndDate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -96,13 +116,7 @@ const TripPointForm = ({ tripId: _tripId, tripStartDate, tripEndDate, prevTripPo
             error={!!errors.name}
             helperText={errors.name}
             inputProps={{ maxLength: 200 }}
-            sx={{
-              width: '100%',
-              '& .MuiInputBase-root': { fontSize: '0.75rem', height: '32px' },
-              '& .MuiInputLabel-root': { fontSize: '0.75rem' },
-              '& .MuiInputBase-input': { padding: '4px 10px' },
-              '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
-            }}
+            sx={textFieldSx}
             size="small"
           />
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
@@ -116,13 +130,7 @@ const TripPointForm = ({ tripId: _tripId, tripStartDate, tripEndDate, prevTripPo
               error={!!errors.arrivalDate}
               helperText={errors.arrivalDate}
               InputLabelProps={{ shrink: true }}
-              sx={{
-                width: '180px',
-                '& .MuiInputBase-root': { fontSize: '0.875rem', height: '36px' },
-                '& .MuiInputLabel-root': { fontSize: '0.875rem' },
-                '& .MuiInputBase-input': { padding: '6px 12px' },
-                '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
-              }}
+              sx={dateFieldSx}
               size="small"
             />
             <TextField
@@ -135,13 +143,7 @@ const TripPointForm = ({ tripId: _tripId, tripStartDate, tripEndDate, prevTripPo
               error={!!errors.departureDate}
               helperText={errors.departureDate}
               InputLabelProps={{ shrink: true }}
-              sx={{
-                width: '180px',
-                '& .MuiInputBase-root': { fontSize: '0.875rem', height: '36px' },
-                '& .MuiInputLabel-root': { fontSize: '0.875rem' },
-                '& .MuiInputBase-input': { padding: '6px 12px' },
-                '& .MuiFormHelperText-root': { fontSize: '0.65rem' }
-              }}
+              sx={dateFieldSx}
               size="small"
             />
           </Box>
@@ -154,11 +156,7 @@ const TripPointForm = ({ tripId: _tripId, tripStartDate, tripEndDate, prevTripPo
             multiline
             rows={2}
             placeholder="Additional notes about this location..."
-            sx={{
-              '& .MuiInputBase-root': { fontSize: '0.875rem' },
-              '& .MuiInputLabel-root': { fontSize: '0.875rem' },
-              '& .MuiInputBase-input': { padding: '6px 12px' }
-            }}
+            sx={notesFieldSx}
             size="small"
           />
           {errors.submit && (
@@ -170,7 +168,7 @@ const TripPointForm = ({ tripId: _tripId, tripStartDate, tripEndDate, prevTripPo
               onClick={onCancel}
               disabled={loading}
               size="small"
-              sx={{ fontSize: '0.7rem', py: 0.4, px: 1.2 }}
+              sx={buttonOutlinedSx}
             >
               Cancel
             </Button>
@@ -179,15 +177,7 @@ const TripPointForm = ({ tripId: _tripId, tripStartDate, tripEndDate, prevTripPo
               type="submit"
               disabled={loading}
               size="small"
-              sx={{
-                fontSize: '0.7rem',
-                py: 0.4,
-                px: 1.2,
-                backgroundColor: '#e3f2fd',
-                color: '#1976d2',
-                '&:hover': { backgroundColor: '#bbdefb' },
-                border: '1px solid #90caf9',
-              }}
+              sx={buttonContainedSx}
             >
               {loading ? 'Saving...' : 'Save'}
             </Button>

@@ -132,22 +132,22 @@ public class ExpenseService
     /// </summary>
     public async Task<bool> DeleteExpenseAsync(int expenseId)
     {
-        var expense = await _context.Expenses.FindAsync(expenseId);
+        var tripId = await _context.Expenses
+            .Where(e => e.ExpenseId == expenseId)
+            .Select(e => e.TripId)
+            .FirstOrDefaultAsync();
 
-        if (expense is null)
-        {
+        if (tripId == 0)
             return false;
-        }
 
-        var tripId = expense.TripId;
-
-        _context.Expenses.Remove(expense);
-        await _context.SaveChangesAsync();
+        var deletedCount = await _context.Expenses
+            .Where(e => e.ExpenseId == expenseId)
+            .ExecuteDeleteAsync();
 
         // Recalculate trip total cost
         await _tripService.RecalculateTripTotalCostAsync(tripId);
 
-        return true;
+        return deletedCount > 0;
     }
 
     /// <summary>

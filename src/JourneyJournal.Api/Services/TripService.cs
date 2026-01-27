@@ -6,6 +6,7 @@ using Mapster;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using RouteEntity = JourneyJournal.Data.Entities.Route;
+using JourneyJournal.Data.Enums;
 
 namespace JourneyJournal.Api.Services;
 
@@ -357,6 +358,7 @@ public class TripService
                 .ThenInclude(tp => tp.Accommodations)
             .Include(t => t.TripPoints)
                 .ThenInclude(tp => tp.RoutesFrom)
+            .AsNoTracking()
             .FirstOrDefaultAsync(t => t.TripId == tripId);
 
         if (trip is null)
@@ -365,10 +367,13 @@ public class TripService
         }
 
         var totalCost = CalculateTripTotalCost(trip);
-        trip.TotalCost = totalCost;
-        trip.UpdatedAt = DateTime.UtcNow;
+        var updatedAt = DateTime.UtcNow;
 
-        await _context.SaveChangesAsync();
+        await _context.Trips
+            .Where(t => t.TripId == tripId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(t => t.TotalCost, totalCost)
+                .SetProperty(t => t.UpdatedAt, updatedAt));
     }
 
     /// <summary>
@@ -391,13 +396,18 @@ public class TripService
             {
                 if (tripPoint.Accommodations is not null)
                 {
-                    totalCost += tripPoint.Accommodations.Sum(a => a.Cost);
+                    // Only include accommodations with status Confirmed or Paid
+                    totalCost += tripPoint.Accommodations
+                        .Where(a => a.Status == AccommodationStatus.Confirmed || a.Status == AccommodationStatus.Paid)
+                        .Sum(a => a.Cost);
                 }
 
-                // Add route costs for routes departing from this trip point
+                // Add route costs for routes departing from this trip point (only selected routes)
                 if (tripPoint.RoutesFrom is not null)
                 {
-                    totalCost += tripPoint.RoutesFrom.Where(r => r.Cost.HasValue).Sum(r => r.Cost!.Value);
+                    totalCost += tripPoint.RoutesFrom
+                        .Where(r => r.IsSelected && r.Cost.HasValue)
+                        .Sum(r => r.Cost!.Value);
                 }
             }
         }

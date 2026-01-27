@@ -626,6 +626,9 @@ const TripDetailPage = () => {
                 <Box sx={{ mb: 2 }}>
                   <TripPointForm
                     tripId={trip.tripId}
+                    tripStartDate={trip.startDate ? DateHelper.formatDateShort(trip.startDate) : undefined}
+                    tripEndDate={trip.endDate ? DateHelper.formatDateShort(trip.endDate) : undefined}
+                    prevTripPointDepartureDate={tripPoint.departureDate ? DateHelper.formatDateShort(tripPoint.departureDate) : undefined}
                     onCancel={() => setAddAfterPointId(null)}
                     onSuccess={async (newTripPoint) => {
                       try {
@@ -705,6 +708,9 @@ const TripDetailPage = () => {
               {addAfterPointId === tripPoint.tripPointId && trip && (
                 <TripPointForm
                   tripId={trip.tripId}
+                  tripStartDate={trip.startDate ? DateHelper.formatDateShort(trip.startDate) : undefined}
+                  tripEndDate={trip.endDate ? DateHelper.formatDateShort(trip.endDate) : undefined}
+                  prevTripPointDepartureDate={tripPoint.departureDate ? DateHelper.formatDateShort(tripPoint.departureDate) : undefined}
                   onCancel={() => setAddAfterPointId(null)}
                   onSuccess={(newTripPoint) => {
                     setCreatedTripPoints((prev) => [...prev, newTripPoint]);

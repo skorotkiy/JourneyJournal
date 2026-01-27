@@ -96,17 +96,22 @@ public class AccommodationService
     /// </summary>
     public async Task<bool> DeleteAccommodationAsync(int accommodationId)
     {
-        var accommodation = await _context.Accommodations.FindAsync(accommodationId);
-        if (accommodation == null)
+        var tripPointId = await _context.Accommodations
+            .Where(a => a.AccommodationId == accommodationId)
+            .Select(a => a.TripPointId)
+            .FirstOrDefaultAsync();
+
+        if (tripPointId == 0)
             return false;
 
-        _context.Accommodations.Remove(accommodation);
-        await _context.SaveChangesAsync();
+        var deletedCount = await _context.Accommodations
+            .Where(a => a.AccommodationId == accommodationId)
+            .ExecuteDeleteAsync();
 
         // Recalculate trip total cost
-        await _tripService.RecalculateTripTotalCostFromTripPointAsync(accommodation.TripPointId);
+        await _tripService.RecalculateTripTotalCostFromTripPointAsync(tripPointId);
 
-        return true;
+        return deletedCount > 0;
     }
 
     // Private helper methods

@@ -118,24 +118,21 @@ public class RouteService
     /// </summary>
     public async Task<bool> DeleteRouteAsync(int routeId)
     {
-        var route = await _context.Routes.FindAsync(routeId);
-        if (route == null)
-            return false;
-
-        var tripId = await _context.TripPoints
-            .Where(tp => tp.TripPointId == route.FromPointId)
-            .Select(tp => tp.TripId)
+        var tripId = await _context.Routes
+            .Where(r => r.RouteId == routeId)
+            .Join(_context.TripPoints, r => r.FromPointId, tp => tp.TripPointId, (r, tp) => tp.TripId)
             .FirstOrDefaultAsync();
 
-        _context.Routes.Remove(route);
-        await _context.SaveChangesAsync();
+        if (tripId == 0)
+            return false;
+
+        var deletedCount = await _context.Routes
+            .Where(r => r.RouteId == routeId)
+            .ExecuteDeleteAsync();
 
         // Recalculate trip total cost
-        if (tripId != 0)
-        {
-            await _tripService.RecalculateTripTotalCostAsync(tripId);
-        }
+        await _tripService.RecalculateTripTotalCostAsync(tripId);
 
-        return true;
+        return deletedCount > 0;
     }
 }
