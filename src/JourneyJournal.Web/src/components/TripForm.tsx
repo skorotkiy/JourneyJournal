@@ -171,6 +171,11 @@ const TripForm: React.FC<TripFormProps> = ({
             }}
             componentsProps={{ typography: { variant: 'body2' } }}
           />
+          {formData.isDefault && (
+            <Typography variant="body2" color="warning.main" sx={{ ml: 1, mt: 0.5 }}>
+              Warning: If there is already a default trip, it will be changed to this one.
+            </Typography>
+          )}
           <FormControlLabel
             control={
               <Checkbox
