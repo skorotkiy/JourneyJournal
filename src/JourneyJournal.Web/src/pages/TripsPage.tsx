@@ -59,7 +59,6 @@ const TripsPage = () => {
           });
         }
       } catch (err) {
-        console.error('Failed to fetch trip:', err);
         setError('Failed to load trip. Please try again.');
       } finally {
         setLoading(false);
@@ -410,7 +409,7 @@ const TripsPage = () => {
                     prev.filter(tp => tp.tripPointId !== tripPoint.tripPointId)
                   );
                 }}
-                onAddRoute={() => console.log('Add route for:', tripPoint.tripPointId)}
+                onAddRoute={() => {}}
                 onAddNextPoint={() => {
                   setAddAfterPointId(tripPoint.tripPointId);
                   setShowTripPointForm(false);

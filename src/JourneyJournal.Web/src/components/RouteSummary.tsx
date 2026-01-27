@@ -76,7 +76,6 @@ const RouteSummary = ({ route, fromPointName, toPointName, onEdit, onRemove }: R
       setShowDeleteConfirm(false);
       onRemove();
     } catch (error) {
-      console.error('Failed to delete route:', error);
     } finally {
       setDeleting(false);
     }

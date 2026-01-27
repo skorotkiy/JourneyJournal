@@ -29,7 +29,6 @@ const TripListPage = () => {
         const data = await tripService.getAll();
         setTrips(data);
       } catch (err) {
-        console.error('Failed to fetch trips:', err);
         setError('Failed to load trips. Please try again.');
       } finally {
         setLoading(false);

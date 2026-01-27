@@ -93,13 +93,11 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
     setDeleting(true);
     try {
       // TODO: Implement API call to delete trip point
-      console.log('Deleting trip point:', tripPoint.tripPointId);
       await new Promise(resolve => setTimeout(resolve, 500));
       
       setShowDeleteConfirm(false);
       onRemove();
     } catch (error) {
-      console.error('Failed to delete trip point:', error);
     } finally {
       setDeleting(false);
     }
@@ -171,14 +169,12 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
         arrivalDate: formData.arrivalDate,
         departureDate: formData.departureDate,
       };
-      console.log('Updating trip point:', updatedTripPoint);
       
       await new Promise(resolve => setTimeout(resolve, 500));
       
       onEdit(updatedTripPoint);
       setIsEditing(false);
     } catch (error) {
-      console.error('Failed to update trip point:', error);
       setErrors({ submit: 'Failed to update trip point. Please try again.' });
     } finally {
       setSaving(false);

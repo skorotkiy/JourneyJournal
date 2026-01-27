@@ -90,7 +90,6 @@ const AccommodationSummary = ({ accommodation, onEdit, onRemove }: Accommodation
       setShowDeleteConfirm(false);
       onRemove();
     } catch (error) {
-      console.error('Failed to delete accommodation:', error);
     } finally {
       setDeleting(false);
     }

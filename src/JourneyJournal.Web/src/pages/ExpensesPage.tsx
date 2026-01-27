@@ -133,7 +133,6 @@ const ExpensesPage = () => {
           setExpenses(expensesData);
         }
       } catch (err) {
-        console.error('Failed to fetch trip:', err);
         setError('Failed to load trip data. Please try again.');
       } finally {
         setLoading(false);
@@ -166,7 +165,6 @@ const ExpensesPage = () => {
       setDeleteSnackbarOpen(false);
       setSelectedExpense(null);
     } catch (err) {
-      console.error('Failed to delete expense:', err);
       setError('Failed to delete expense. Please try again.');
     } finally {
       setDeleting(false);

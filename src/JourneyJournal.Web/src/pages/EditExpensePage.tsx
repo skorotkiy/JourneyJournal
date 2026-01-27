@@ -43,7 +43,6 @@ const EditExpensePage = () => {
         }
         setExpense(expenseData);
       } catch (err) {
-        console.error('Failed to fetch data:', err);
         setError('Failed to load expense data. Please try again.');
       } finally {
         setLoading(false);

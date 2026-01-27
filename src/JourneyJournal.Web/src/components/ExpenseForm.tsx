@@ -96,7 +96,6 @@ const ExpenseForm = ({ tripId, onCancel, onSuccess, initialData }: ExpenseFormPr
       
       onSuccess(createdExpense);
     } catch (error) {
-      console.error('Failed to create expense:', error);
       setErrors({ submit: 'Failed to create expense. Please try again.' });
     } finally {
       setLoading(false);

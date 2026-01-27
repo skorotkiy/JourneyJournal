@@ -26,7 +26,6 @@ const Header = () => {
         await tripService.getAll();
         setApiAvailable(true);
       } catch (error) {
-        console.error('API not available:', error);
         setApiAvailable(false);
       }
     };

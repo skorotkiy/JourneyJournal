@@ -21,7 +21,6 @@ const HomePage = () => {
         setApiAvailable(true);
         return true;
       } catch (error) {
-        console.error('API not available:', error);
         setApiAvailable(false);
         setLoading(false);
         return false;
@@ -40,7 +39,6 @@ const HomePage = () => {
           setCurrentTrip(defaultTrip);
         }
       } catch (error) {
-        console.error('Failed to fetch trips:', error);
         setApiAvailable(false);
       } finally {
         setLoading(false);

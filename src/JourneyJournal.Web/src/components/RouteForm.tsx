@@ -116,7 +116,6 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
       
       onSuccess(result);
     } catch (error) {
-      console.error('Failed to save route:', error);
       setErrors({ submit: 'Failed to save route. Please try again.' });
     } finally {
       setLoading(false);

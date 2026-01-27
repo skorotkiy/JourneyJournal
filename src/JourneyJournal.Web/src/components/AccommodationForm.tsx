@@ -122,7 +122,6 @@ const AccommodationForm = ({ tripPointId, tripPointArrivalDate, tripPointDepartu
       }
       onSuccess(result);
     } catch (error) {
-      console.error('Failed to save accommodation:', error);
       setErrors({ submit: 'Failed to save accommodation. Please try again.' });
     } finally {
       setLoading(false);

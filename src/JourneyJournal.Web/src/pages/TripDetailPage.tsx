@@ -112,7 +112,6 @@ const TripDetailPage = () => {
           setShowExpenseForm(true);
         }
       } catch (err) {
-        console.error('Failed to fetch trip:', err);
         // Detect network/backend connection issues (axios no response or network error)
         const anyErr = err as any;
         const isNetwork = anyErr && (anyErr.isAxiosError && !anyErr.response || (anyErr.message && /network|ECONNREFUSED|ENOTFOUND/i.test(anyErr.message)));
@@ -222,15 +221,11 @@ const TripDetailPage = () => {
                 } else {
                   payload.tripPoints = transformTripPointsForBackend(trip?.tripPoints || []);
                 }
-                // Log serialized payload for debugging
-                // eslint-disable-next-line no-console
-                console.debug('PUT /trips payload (trip edit):', JSON.stringify(payload, null, 2));
                 const updatedTrip = await tripService.update(trip!.tripId.toString(), payload);
                 setTrip(updatedTrip);
                 setIsEditing(false);
                 setError(null);
               } catch (err) {
-                console.error('Failed to update trip:', err);
                 setError('Failed to update trip. Please try again.');
               }
             }}
@@ -446,7 +441,6 @@ const TripDetailPage = () => {
               setCreatedTripPoints([]);
               setShowTripPointForm(false);
             } catch (err) {
-              console.error('Failed to save trip point:', err);
               setError('Failed to save trip point. Please try again.');
             }
           }}
@@ -524,13 +518,9 @@ const TripDetailPage = () => {
                       isDefault: trip.isDefault,
                       tripPoints: transformTripPointsForBackend(updatedTripPoints),
                     };
-                    // Log serialized payload for debugging
-                    // eslint-disable-next-line no-console
-                    console.debug('PUT /trips payload (update trip point):', JSON.stringify(updatedTripData, null, 2));
                     const updatedTrip = await tripService.update(trip.tripId.toString(), updatedTripData);
                     setTrip(updatedTrip);
                   } catch (err) {
-                    console.error('Failed to update trip point:', err);
                     setError('Failed to update trip point. Please try again.');
                   }
                 }}
@@ -559,17 +549,13 @@ const TripDetailPage = () => {
                       isDefault: trip.isDefault,
                       tripPoints: transformTripPointsForBackend(filteredTripPoints),
                     };
-                    // Log serialized payload for debugging
-                    // eslint-disable-next-line no-console
-                    console.debug('PUT /trips payload (remove trip point):', JSON.stringify(updatedTripData, null, 2));
                     const updatedTrip = await tripService.update(trip.tripId.toString(), updatedTripData);
                     setTrip(updatedTrip);
                   } catch (err) {
-                    console.error('Failed to remove trip point:', err);
                     setError('Failed to remove trip point. Please try again.');
                   }
                 }}
-                onAddRoute={() => console.log('Add route for:', tripPoint.tripPointId)}
+                onAddRoute={() => {}}
                 onAddNextPoint={() => {
                   setAddAfterPointId(String(tripPoint.tripPointId));
                   setShowTripPointForm(false);
@@ -589,7 +575,6 @@ const TripDetailPage = () => {
                     const refreshedTrip = await tripService.getById(trip.tripId.toString());
                     setTrip(refreshedTrip);
                   } catch (err) {
-                    console.error('Failed to refresh trip after route change:', err);
                   }
                 }}
                 renderAddNextPointButton={() => (
@@ -664,14 +649,10 @@ const TripDetailPage = () => {
                           isDefault: trip.isDefault,
                           tripPoints: transformTripPointsForBackend(updatedTripPoints),
                         };
-                        // Log serialized payload for debugging
-                        // eslint-disable-next-line no-console
-                        console.debug('PUT /trips payload (insert trip point):', JSON.stringify(updatedTripData, null, 2));
                         const updatedTrip = await tripService.update(trip.tripId.toString(), updatedTripData);
                         setTrip(updatedTrip);
                         setAddAfterPointId(null);
                       } catch (err) {
-                        console.error('Failed to add trip point:', err);
                         setError('Failed to add trip point. Please try again.');
                       }
                     }}
@@ -701,7 +682,7 @@ const TripDetailPage = () => {
                     prev.filter((tp) => tp.tripPointId !== tripPoint.tripPointId)
                   );
                 }}
-                onAddRoute={() => console.log('Add route for:', tripPoint.tripPointId)}
+                onAddRoute={() => {}}
                 onAddNextPoint={() => {
                   setAddAfterPointId(tripPoint.tripPointId);
                   setShowTripPointForm(false);
