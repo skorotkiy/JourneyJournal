@@ -188,11 +188,13 @@ const TripForm: React.FC<TripFormProps> = ({
             componentsProps={{ typography: { variant: 'body2' } }}
           />
         </Box>
-        {formData.isDefault && (
-          <Typography variant="body2" color="warning.main" sx={{ ml: 0.5, mt: 0.5 }}>
-            Warning: If there is already a default trip, it will be changed to this one.
-          </Typography>
-        )}
+        <Box sx={{ minHeight: 28 }}>
+          {formData.isDefault && (
+            <Typography variant="body2" color="warning.main" sx={{ ml: 0.5, mt: 0.5 }}>
+              Warning: If there is already a default trip, it will be changed to this one.
+            </Typography>
+          )}
+        </Box>
         </Box>
         {errors.submit && <Typography color="error">{errors.submit}</Typography>}
         <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'flex-end', mt: 0.5, alignItems: 'center' }}>
