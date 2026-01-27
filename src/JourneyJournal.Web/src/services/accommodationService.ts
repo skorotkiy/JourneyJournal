@@ -1,5 +1,6 @@
 import { apiClient } from './api';
-import type { Accommodation, UpdateAccommodationRequest } from '../types/trip';
+import type { Accommodation } from '../types/accommodation';
+import type { UpdateAccommodationRequest } from '../types/accommodation';
 
 export const accommodationService = {
   update: async (accommodationId: number, accommodation: UpdateAccommodationRequest): Promise<Accommodation> => {

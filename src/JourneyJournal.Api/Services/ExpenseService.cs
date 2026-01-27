@@ -32,10 +32,18 @@ public class ExpenseService
     {
         var expenses = await _context.Expenses
             .Where(e => e.TripId == tripId)
+            .Include(e => e.Trip)
             .OrderByDescending(e => e.ExpenseDate)
             .ToListAsync();
 
-        return _mapper.Map<List<ExpenseDto>>(expenses);
+        var expenseDtos = _mapper.Map<List<ExpenseDto>>(expenses);
+        // Set currency from trip
+        foreach (var dto in expenseDtos)
+        {
+            dto.Currency = expenses.First(e => e.ExpenseId == dto.ExpenseId).Trip.Currency;
+        }
+
+        return expenseDtos;
     }
 
     /// <summary>

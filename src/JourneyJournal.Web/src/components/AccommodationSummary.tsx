@@ -19,8 +19,8 @@ import {
   EventOutlined as EventIcon,
   MonetizationOnOutlined as MoneyIcon,
 } from '@mui/icons-material';
-import type { Accommodation } from '../types/trip';
-import { AccommodationType, AccommodationStatus } from '../types/trip';
+import type { Accommodation } from '../types/accommodation';
+import { AccommodationType, AccommodationStatus } from '../types/accommodation';
 import { DateHelper } from '../utils/DateHelper';
 
 interface AccommodationSummaryProps {

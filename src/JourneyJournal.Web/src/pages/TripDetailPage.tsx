@@ -512,8 +512,6 @@ const TripDetailPage = () => {
                     const updatedTripPoints = (trip.tripPoints || []).map((tp) =>
                       tp.tripPointId === updatedTripPoint.tripPointId ? updatedTripPoint : tp
                     );
-                    // eslint-disable-next-line no-console
-                    console.debug('TripDetailPage: updatedTripPoints (raw) before transform', JSON.stringify(updatedTripPoints, null, 2));
                     const updatedTripData = {
                       name: trip.name,
                       description: trip.description,
@@ -586,6 +584,14 @@ const TripDetailPage = () => {
                 nextPointArrivalDate={
                   index < (trip.tripPoints || []).length - 1 ? (trip.tripPoints || [])[index + 1].arrivalDate : undefined
                 }
+                onRouteChange={async () => {
+                  try {
+                    const refreshedTrip = await tripService.getById(trip.tripId.toString());
+                    setTrip(refreshedTrip);
+                  } catch (err) {
+                    console.error('Failed to refresh trip after route change:', err);
+                  }
+                }}
                 renderAddNextPointButton={() => (
                   addAfterPointId === String(tripPoint.tripPointId) || showTripPointForm ? (
                     <Button
@@ -710,6 +716,10 @@ const TripDetailPage = () => {
                 nextPointArrivalDate={
                   index < createdTripPoints.length - 1 ? createdTripPoints[index + 1].arrivalDate : undefined
                 }
+                onRouteChange={() => {
+                  // For created trip points, routes are managed locally in state
+                  // No need to refresh from server since they're not persisted yet
+                }}
               />
               {addAfterPointId === tripPoint.tripPointId && trip && (
                 <TripPointForm

@@ -29,5 +29,5 @@ public class UpdateTripRequest
     [MaxLength(3)]
     public string? Currency { get; set; }
 
-    public List<CreateTripPointRequest> TripPoints { get; set; } = new();
+    public List<UpdateTripPointRequest> TripPoints { get; set; } = new();
 }

@@ -18,9 +18,9 @@ import {
   buttonOutlinedSx,
   buttonContainedSx,
 } from '../styles/formStyles';
-import type { Accommodation } from '../types/trip';
+import type { Accommodation } from '../types/accommodation';
 import { accommodationService } from '../services/accommodationService';
-import { AccommodationType, AccommodationStatus } from '../types/trip';
+import { AccommodationType, AccommodationStatus } from '../types/accommodation';
 
 
 interface AccommodationFormProps {

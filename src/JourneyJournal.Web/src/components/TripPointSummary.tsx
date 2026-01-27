@@ -12,7 +12,8 @@ import {
   DialogActions,
 } from '@mui/material';
 import { EditOutlined as EditIcon, DeleteOutline as DeleteIcon } from '@mui/icons-material';
-import type { TripPoint, Accommodation, Route } from '../types/trip';
+import type { TripPoint } from '../types/trip';
+import type { Accommodation } from '../types/accommodation';
 import AccommodationForm from './AccommodationForm';
 import AccommodationSummary from './AccommodationSummary';
 import RouteForm from './RouteForm';
@@ -30,9 +31,10 @@ interface TripPointSummaryProps {
   nextPointName?: string;
   nextPointArrivalDate?: string;
   renderAddNextPointButton?: () => React.ReactNode;
+  onRouteChange?: () => void;
 }
 
-const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNextPoint = false, nextPointId, nextPointName = '', nextPointArrivalDate, renderAddNextPointButton }: TripPointSummaryProps) => {
+const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNextPoint = false, nextPointId, nextPointName = '', nextPointArrivalDate, renderAddNextPointButton, onRouteChange }: TripPointSummaryProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showRouteWarning, setShowRouteWarning] = useState(false);
@@ -41,7 +43,6 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
   const [showAccommodationForm, setShowAccommodationForm] = useState(false);
   const [showRouteForm, setShowRouteForm] = useState(false);
   const [accommodations, setAccommodations] = useState<Accommodation[]>(tripPoint.accommodations || []);
-  const [routes, setRoutes] = useState<Route[]>(tripPoint.routesFrom || []);
   const [formData, setFormData] = useState({
     name: tripPoint.name,
     arrivalDate: DateHelper.formatDateShort(tripPoint.arrivalDate),
@@ -55,7 +56,6 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
   // Sync local state with prop changes
   useEffect(() => {
     setAccommodations(tripPoint.accommodations || []);
-    setRoutes(tripPoint.routesFrom || []);
   }, [tripPoint]);
 
   // Scroll to accommodation form when it's shown
@@ -467,7 +467,7 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
             )}
           </Box>
 
-          {(hasNextPoint || routes.length > 0) && (
+          {(hasNextPoint || (tripPoint.routesFrom || []).length > 0) && (
             <Box sx={{ mt: 2 }}>
               <Typography variant="body1" sx={{ fontWeight: 600 }}>
                 Routes
@@ -492,29 +492,14 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
                   Add Route
                 </Button>
               )}
-              {routes.map((route) => (
+              {(tripPoint.routesFrom || []).map((route) => (
                 <RouteSummary
                   key={route.routeId}
                   route={route}
                   fromPointName={tripPoint.name}
                   toPointName={nextPointName}
-                  onEdit={(updatedRoute) => {
-                    const updatedRoutes = (routes || []).map(r => r.routeId === updatedRoute.routeId ? updatedRoute : r);
-                    setRoutes(updatedRoutes);
-                    // Propagate change to parent so it can persist via trip update
-                    const updatedTripPoint = { ...tripPoint, routesFrom: updatedRoutes } as TripPoint;
-                    // eslint-disable-next-line no-console
-                    console.debug('TripPointSummary: propagating route edit to parent', updatedTripPoint);
-                    onEdit(updatedTripPoint);
-                  }}
-                  onRemove={() => {
-                    const updatedRoutes = (routes || []).filter(r => r.routeId !== route.routeId);
-                    setRoutes(updatedRoutes);
-                    const updatedTripPoint = { ...tripPoint, routesFrom: updatedRoutes } as TripPoint;
-                    // eslint-disable-next-line no-console
-                    console.debug('TripPointSummary: propagating route remove to parent', updatedTripPoint);
-                    onEdit(updatedTripPoint);
-                  }}
+                  onEdit={() => onRouteChange?.()}
+                  onRemove={() => onRouteChange?.()}
                 />
               ))}
             </Box>
@@ -531,19 +516,8 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
               defaultDepartureDate={tripPoint.departureDate ? tripPoint.departureDate.slice(0, 16) : undefined}
               defaultArrivalDate={nextPointArrivalDate ? nextPointArrivalDate.slice(0, 16) : undefined}
               onCancel={() => setShowRouteForm(false)}
-              onSuccess={(newRoute) => {
-                const updatedRoutes = [...routes, newRoute];
-                setRoutes(updatedRoutes);
-                
-                // Update trip point with new route
-                const updatedTripPoint = {
-                  ...tripPoint,
-                  routesFrom: updatedRoutes,
-                };
-                // eslint-disable-next-line no-console
-                console.debug('TripPointSummary: propagating route add to parent', updatedTripPoint);
-                onEdit(updatedTripPoint);
-                
+              onSuccess={() => {
+                onRouteChange?.();
                 setShowRouteForm(false);
               }}
             />

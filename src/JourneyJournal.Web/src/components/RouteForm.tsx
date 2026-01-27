@@ -11,8 +11,9 @@ import {
   Checkbox,
   Paper,
 } from '@mui/material';
-import type { Route } from '../types/trip';
-import { TransportationType } from '../types/trip';
+import type { Route } from '../types/route';
+import { TransportationType } from '../types/route';
+import { routeService } from '../services/routeService';
 import {
   textFieldSx,
   selectFieldSx,
@@ -92,22 +93,7 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
 
     setLoading(true);
     try {
-      // TODO: Implement API call to create route
       const routeData = {
-        ...formData,
-        fromPointId,
-        toPointId,
-        cost: formData.cost ? parseFloat(formData.cost) : undefined,
-        durationMinutes: formData.durationMinutes ? parseInt(formData.durationMinutes) : undefined,
-      };
-      console.log('Creating route:', routeData);
-      
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const createdRoute: Route = {
-        routeId: Date.now(),
-        fromPointId,
-        toPointId,
         name: routeName,
         transportationType: formData.transportationType,
         carrier: formData.carrier || undefined,
@@ -117,13 +103,21 @@ const RouteForm = ({ fromPointId, toPointId, fromPointName, toPointName, default
         cost: formData.cost ? parseFloat(formData.cost) : undefined,
         isSelected: formData.isSelected,
         notes: formData.notes || undefined,
-        createdAt: new Date().toISOString(),
       };
+
+      let result: Route;
+      if (editMode && initialData?.routeId) {
+        // Update existing route
+        result = await routeService.update(initialData.routeId, routeData);
+      } else {
+        // Create new route
+        result = await routeService.create(fromPointId, toPointId, routeData);
+      }
       
-      onSuccess(createdRoute);
+      onSuccess(result);
     } catch (error) {
-      console.error('Failed to create route:', error);
-      setErrors({ submit: 'Failed to create route. Please try again.' });
+      console.error('Failed to save route:', error);
+      setErrors({ submit: 'Failed to save route. Please try again.' });
     } finally {
       setLoading(false);
     }

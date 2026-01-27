@@ -1,4 +1,4 @@
-import { Box, Typography, Button, Paper } from '@mui/material';
+import { Box, Typography, Button, Paper, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
@@ -11,9 +11,27 @@ const HomePage = () => {
   const navigate = useNavigate();
   const [currentTrip, setCurrentTrip] = useState<Trip | null>(null);
   const [loading, setLoading] = useState(true);
+  const [apiAvailable, setApiAvailable] = useState(true);
 
   useEffect(() => {
+    const checkApiAvailability = async () => {
+      try {
+        // Try to fetch trips to check if API is available
+        await tripService.getAll();
+        setApiAvailable(true);
+        return true;
+      } catch (error) {
+        console.error('API not available:', error);
+        setApiAvailable(false);
+        setLoading(false);
+        return false;
+      }
+    };
+
     const fetchCurrentTrip = async () => {
+      const isApiAvailable = await checkApiAvailability();
+      if (!isApiAvailable) return;
+
       try {
         const trips = await tripService.getAll();
         // Get the default trip (IsDefault=true) or most recent incomplete trip
@@ -23,6 +41,7 @@ const HomePage = () => {
         }
       } catch (error) {
         console.error('Failed to fetch trips:', error);
+        setApiAvailable(false);
       } finally {
         setLoading(false);
       }
@@ -65,7 +84,16 @@ const HomePage = () => {
 
   return (
     <Box sx={{ textAlign: 'center', py: 8 }}>
-
+      {!apiAvailable ? (
+        <Alert severity="error" sx={{ maxWidth: 600, mx: 'auto', mb: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            API Server Unavailable
+          </Typography>
+          <Typography variant="body2">
+            The JourneyJournal API server is not running. Please start the API server and refresh this page.
+          </Typography>
+        </Alert>
+      ) : (
         <Box sx={{ mt: 6, display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center' }}>
           <Paper elevation={3} sx={{ p: 4, maxWidth: 300, width: '100%' }}>
             <FlightTakeoffIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
@@ -96,6 +124,7 @@ const HomePage = () => {
             </Button>
           </Paper>
         </Box>
+      )}
     </Box>
   );
 };

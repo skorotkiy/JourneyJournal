@@ -257,10 +257,6 @@ public class TripService
         trip.UpdatedAt = DateTime.UtcNow;
 
         // Remove all existing trip points (cascade will handle related data)
-        // First, explicitly remove routes due to DeleteBehavior.Restrict
-        var routesToDelete = trip.TripPoints.SelectMany(tp => tp.RoutesFrom.Concat(tp.RoutesTo)).Distinct();
-        _context.Routes.RemoveRange(routesToDelete);
-        
         _context.TripPoints.RemoveRange(trip.TripPoints);
 
         // Recreate trip points with related data
@@ -322,46 +318,6 @@ public class TripService
             }
 
             trip.TripPoints.Add(tripPoint);
-        }
-
-        // Add routes after all points are created
-        var tripPointsList = trip.TripPoints.ToList();
-        foreach (var pointRequest in request.TripPoints)
-        {
-            var currentPoint = tripPointsList.FirstOrDefault(p => p.Order == pointRequest.Order);
-            if (currentPoint is null) continue;
-
-            foreach (var routeRequest in pointRequest.Routes)
-            {
-                var fromPoint = tripPointsList.FirstOrDefault(p => p.Order == routeRequest.FromPointOrder);
-                var toPoint = tripPointsList.FirstOrDefault(p => p.Order == routeRequest.ToPointOrder);
-
-                if (fromPoint is null || toPoint is null)
-                {
-                    throw new InvalidOperationException($"Invalid route: points with order {routeRequest.FromPointOrder} or {routeRequest.ToPointOrder} not found");
-                }
-
-                if (routeRequest.FromPointOrder == routeRequest.ToPointOrder)
-                {
-                    throw new InvalidOperationException("Route cannot have the same starting and ending point");
-                }
-
-                fromPoint.RoutesFrom.Add(new RouteEntity
-                {
-                    FromPoint = fromPoint,
-                    ToPoint = toPoint,
-                    Name = routeRequest.Name,
-                    TransportationType = routeRequest.TransportationType,
-                    Carrier = routeRequest.Carrier,
-                    DepartureTime = routeRequest.DepartureTime,
-                    ArrivalTime = routeRequest.ArrivalTime,
-                    DurationMinutes = routeRequest.DurationMinutes,
-                    Cost = routeRequest.Cost,
-                    IsSelected = routeRequest.IsSelected,
-                    Notes = routeRequest.Notes,
-                    CreatedAt = DateTime.UtcNow
-                });
-            }
         }
 
         await _context.SaveChangesAsync();

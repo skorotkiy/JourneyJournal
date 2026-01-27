@@ -17,4 +17,5 @@ public class ExpenseDto
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    public string Currency { get; set; } = string.Empty;
 }

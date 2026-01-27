@@ -18,9 +18,10 @@ import {
   AccessTime as DurationIcon,
   MonetizationOnOutlined as MoneyIcon,
 } from '@mui/icons-material';
-import type { Route } from '../types/trip';
-import { TransportationType } from '../types/trip';
+import type { Route } from '../types/route';
+import { TransportationType } from '../types/route';
 import RouteForm from './RouteForm';
+import { routeService } from '../services/routeService';
 import { DateHelper } from '../utils/DateHelper';
 
 interface RouteSummaryProps {
@@ -70,9 +71,7 @@ const RouteSummary = ({ route, fromPointName, toPointName, onEdit, onRemove }: R
   const handleConfirmDelete = async () => {
     setDeleting(true);
     try {
-      // TODO: Implement API call to delete route
-      console.log('Deleting route:', route.routeId);
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await routeService.delete(route.routeId);
       
       setShowDeleteConfirm(false);
       onRemove();
