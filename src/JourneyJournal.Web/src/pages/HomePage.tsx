@@ -87,10 +87,10 @@ const HomePage = () => {
       {!apiAvailable ? (
         <Alert severity="error" sx={{ maxWidth: 600, mx: 'auto', mb: 4 }}>
           <Typography variant="h6" gutterBottom>
-            API Server Unavailable
+            Service Unavailable
           </Typography>
           <Typography variant="body2">
-            The JourneyJournal API server is not running. Please start the API server and refresh this page.
+            Unable to connect to the service. Please check your connection and try again.
           </Typography>
         </Alert>
       ) : (
