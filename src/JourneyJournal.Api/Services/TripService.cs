@@ -89,6 +89,7 @@ public class TripService
             foreach (var otherTrip in otherDefaultTrips)
             {
                 otherTrip.IsDefault = false;
+                otherTrip.UpdatedAt = DateTime.UtcNow;
             }
         }
 
@@ -251,6 +252,7 @@ public class TripService
             foreach (var otherTrip in otherDefaultTrips)
             {
                 otherTrip.IsDefault = false;
+                otherTrip.UpdatedAt = DateTime.UtcNow;
             }
         }
         trip.Description = request.Description;
