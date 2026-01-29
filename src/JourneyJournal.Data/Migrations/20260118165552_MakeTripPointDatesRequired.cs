@@ -11,6 +11,8 @@ namespace JourneyJournal.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("PRAGMA foreign_keys = 0;", suppressTransaction: true);
+
             migrationBuilder.AlterColumn<DateTime>(
                 name: "DepartureDate",
                 table: "TripPoints",
@@ -30,11 +32,15 @@ namespace JourneyJournal.Data.Migrations
                 oldClrType: typeof(DateTime),
                 oldType: "TEXT",
                 oldNullable: true);
+
+            migrationBuilder.Sql("PRAGMA foreign_keys = 1;", suppressTransaction: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("PRAGMA foreign_keys = 0;", suppressTransaction: true);
+
             migrationBuilder.AlterColumn<DateTime>(
                 name: "DepartureDate",
                 table: "TripPoints",
@@ -50,6 +56,8 @@ namespace JourneyJournal.Data.Migrations
                 nullable: true,
                 oldClrType: typeof(DateTime),
                 oldType: "TEXT");
+
+            migrationBuilder.Sql("PRAGMA foreign_keys = 1;", suppressTransaction: true);
         }
     }
 }

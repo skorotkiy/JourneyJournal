@@ -126,11 +126,22 @@ You can run these scripts from the project root in any PowerShell terminal. They
 
 ----
 
+
 ## 7. Additional Notes
 
 - CORS is enabled for `http://localhost:5173` and `http://localhost:3000` by default.
 - Use the `JourneyJournal.Api.http` file for API testing (VS Code REST Client extension).
 - For troubleshooting, check the API and web client terminal output for errors.
+
+### First Run: Restore Dependencies
+
+After cloning the repository, you must restore all required NuGet packages before building or running the project. Simply run:
+
+```
+dotnet restore
+```
+
+in the root of the repository.
 
 ---
 
