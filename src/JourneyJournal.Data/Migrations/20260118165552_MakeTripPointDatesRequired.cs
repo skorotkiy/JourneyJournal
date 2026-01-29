@@ -11,6 +11,7 @@ namespace JourneyJournal.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Disable foreign key constraints temporarily: required for passing sqlite errors
             migrationBuilder.Sql("PRAGMA foreign_keys = 0;", suppressTransaction: true);
 
             migrationBuilder.AlterColumn<DateTime>(
@@ -33,12 +34,14 @@ namespace JourneyJournal.Data.Migrations
                 oldType: "TEXT",
                 oldNullable: true);
 
+            // Re-enable foreign key constraints
             migrationBuilder.Sql("PRAGMA foreign_keys = 1;", suppressTransaction: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            // Disable foreign key constraints temporarily: required for passing sqlite errors
             migrationBuilder.Sql("PRAGMA foreign_keys = 0;", suppressTransaction: true);
 
             migrationBuilder.AlterColumn<DateTime>(
@@ -57,6 +60,7 @@ namespace JourneyJournal.Data.Migrations
                 oldClrType: typeof(DateTime),
                 oldType: "TEXT");
 
+            // Re-enable foreign key constraints
             migrationBuilder.Sql("PRAGMA foreign_keys = 1;", suppressTransaction: true);
         }
     }
