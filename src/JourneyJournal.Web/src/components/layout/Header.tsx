@@ -1,15 +1,18 @@
+
 import { useState, useEffect } from 'react';
 import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import ExploreIcon from '@mui/icons-material/Explore';
 import { tripService } from '../../services/tripService';
+import type { Trip } from '../../types/trip';
 
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [apiAvailable, setApiAvailable] = useState(true);
+  const [hasTrips, setHasTrips] = useState(false);
   const open = Boolean(anchorEl);
 
   // Only check API availability on the home page
@@ -18,19 +21,22 @@ const Header = () => {
   useEffect(() => {
     if (!shouldCheckApi) {
       setApiAvailable(true);
+      setHasTrips(true);
       return;
     }
 
-    const checkApiAvailability = async () => {
+    const checkApiAndTrips = async () => {
       try {
-        await tripService.getAll();
+        const trips: Trip[] = await tripService.getAll();
         setApiAvailable(true);
+        setHasTrips(trips.length > 0);
       } catch (error) {
         setApiAvailable(false);
+        setHasTrips(false);
       }
     };
 
-    checkApiAvailability();
+    checkApiAndTrips();
   }, [shouldCheckApi]);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -58,7 +64,7 @@ const Header = () => {
         >
           Journey Journal
         </Typography>
-        {apiAvailable && (
+        {apiAvailable && hasTrips && (
           <>
             <IconButton
               color="inherit"

@@ -123,9 +123,6 @@ public class RouteService
             .Join(_context.TripPoints, r => r.FromPointId, tp => tp.TripPointId, (r, tp) => tp.TripId)
             .FirstOrDefaultAsync();
 
-        if (tripId == 0)
-            return false;
-
         var deletedCount = await _context.Routes
             .Where(r => r.RouteId == routeId)
             .ExecuteDeleteAsync();

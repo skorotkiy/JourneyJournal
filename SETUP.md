@@ -14,7 +14,10 @@ This guide will help you set up the JourneyJournal application for local develop
 ---
 
 
+
 ## 1. Clone the Repository
+
+For help with cloning, see the GitHub guide: [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
 
 ```
 git clone <your-repo-url>
@@ -48,6 +51,21 @@ src/JourneyJournal.Data/db/journeydb.sqlite
 
 You can apply migrations using the provided PowerShell script. On the first run, this script will automatically create the database file and the db folder if they do not exist:
 
+
+
+
+
+Option 1 (if you are already in a PowerShell window):
+```
+./scripts/run-update-db.ps1
+```
+
+Option 2 (from Command Prompt/cmd):
+```
+powershell -File scripts/run-update-db.ps1
+```
+
+Option 3 (PowerShell Core or Windows PowerShell):
 ```
 pwsh ./scripts/run-update-db.ps1
 ```
@@ -66,8 +84,20 @@ dotnet ef database update --startup-project ../JourneyJournal.Api
 ## 4. Launch the API
 
 
-From the root directory, run:
 
+From the root directory, run one of the following:
+
+Option 1 (if you are already in a PowerShell window):
+```
+./scripts/run-api.ps1
+```
+
+Option 2 (from Command Prompt/cmd):
+```
+powershell -File scripts/run-api.ps1
+```
+
+Option 3 (PowerShell Core or Windows PowerShell):
 ```
 pwsh ./scripts/run-api.ps1
 ```
@@ -86,8 +116,20 @@ The API will be available at:
 ## 5. Launch the Web Client
 
 
-From the root directory:
 
+From the root directory, run one of the following:
+
+Option 1 (if you are already in a PowerShell window):
+```
+./scripts/run-web.ps1
+```
+
+Option 2 (from Command Prompt/cmd):
+```
+powershell -File scripts/run-web.ps1
+```
+
+Option 3 (PowerShell Core or Windows PowerShell):
 ```
 pwsh ./scripts/run-web.ps1
 ```
@@ -128,11 +170,17 @@ There are three helpful PowerShell scripts in the scripts folder to simplify com
 
 - **run-api.ps1**
 	- Starts the backend API server (ASP.NET Core)
-	- Usage: `pwsh ./scripts/run-api.ps1`
+		- Usage:
+			- Option 1 (if you are already in a PowerShell window): `./scripts/run-api.ps1`
+			- Option 2 (from Command Prompt/cmd): `powershell -File scripts/run-api.ps1`
+			- Option 3 (PowerShell Core or Windows PowerShell): `pwsh ./scripts/run-api.ps1`
 
 - **run-web.ps1**
 	- Starts the frontend React web client (Vite dev server)
-	- Usage: `pwsh ./scripts/run-web.ps1`
+		- Usage:
+			- Option 1 (if you are already in a PowerShell window): `./scripts/run-web.ps1`
+			- Option 2 (from Command Prompt/cmd): `powershell -File scripts/run-web.ps1`
+			- Option 3 (PowerShell Core or Windows PowerShell): `pwsh ./scripts/run-web.ps1`
 
 You can run these scripts from the project root in any PowerShell terminal. They automate the most common setup and development steps for you.
 
