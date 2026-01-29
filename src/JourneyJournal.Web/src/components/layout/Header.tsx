@@ -90,11 +90,11 @@ const Header = () => {
               <MenuItem onClick={() => handleMenuItemClick('/expenses/create')}>
                 Add Expense
               </MenuItem>
-              <MenuItem onClick={() => handleMenuItemClick('/trips/create')}>
-                Add Trip
-              </MenuItem>
               <MenuItem onClick={() => handleMenuItemClick('/expenses')}>
                 Expenses
+              </MenuItem>
+              <MenuItem onClick={() => handleMenuItemClick('/trips/create')}>
+                Add Trip
               </MenuItem>
               <MenuItem onClick={() => handleMenuItemClick('/trips')}>
                 Trips
