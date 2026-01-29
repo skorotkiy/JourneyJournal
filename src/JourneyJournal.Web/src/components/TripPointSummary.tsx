@@ -12,7 +12,8 @@ import {
   DialogActions,
 } from '@mui/material';
 import { EditOutlined as EditIcon, DeleteOutline as DeleteIcon } from '@mui/icons-material';
-import type { TripPoint } from '../types/trip';
+import type { TripPointFull, UpdateTripPointRequest } from '../types/trippoint';
+import { tripPointService } from '../services/tripPointService';
 import type { Accommodation } from '../types/accommodation';
 import AccommodationForm from './AccommodationForm';
 import AccommodationSummary from './AccommodationSummary';
@@ -26,8 +27,8 @@ import {
 } from '../styles/formStyles';
 
 interface TripPointSummaryProps {
-  tripPoint: TripPoint;
-  onEdit: (updatedTripPoint: TripPoint) => void;
+  tripPoint: TripPointFull;
+  onEdit: (updatedTripPoint: TripPointFull) => void;
   onRemove: () => void;
   onAddRoute: () => void;
   onAddNextPoint: () => void;
@@ -36,10 +37,9 @@ interface TripPointSummaryProps {
   nextPointName?: string;
   nextPointArrivalDate?: string;
   renderAddNextPointButton?: () => React.ReactNode;
-  onRouteChange?: () => void;
 }
 
-const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNextPoint = false, nextPointId, nextPointName = '', nextPointArrivalDate, renderAddNextPointButton, onRouteChange }: TripPointSummaryProps) => {
+const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNextPoint = false, nextPointId, nextPointName = '', nextPointArrivalDate, renderAddNextPointButton }: TripPointSummaryProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showRouteWarning, setShowRouteWarning] = useState(false);
@@ -97,10 +97,12 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
   const handleConfirmDelete = async () => {
     setDeleting(true);
     try {
+      await tripPointService.delete(tripPoint.tripPointId);
       setShowDeleteConfirm(false);
       onRemove();
     } catch (error) {
-      // Error handling is done by parent component
+      // Optionally show error to user
+      setShowDeleteConfirm(false);
     } finally {
       setDeleting(false);
     }
@@ -158,21 +160,24 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!validate()) {
       return;
     }
-
     setSaving(true);
     try {
-      const updatedTripPoint = {
-        ...tripPoint,
-        ...formData,
+      const payload: UpdateTripPointRequest = {
+        name: formData.name,
+        order: tripPoint.order,
         arrivalDate: formData.arrivalDate,
         departureDate: formData.departureDate,
+        notes: formData.notes,
       };
-
-      onEdit(updatedTripPoint);
+      const updated = await tripPointService.update(tripPoint.tripPointId, payload);
+      // Merge only direct fields, keep relations
+      onEdit({
+        ...tripPoint,
+        ...updated
+      });
       setIsEditing(false);
     } catch (error) {
       setErrors({ submit: 'Failed to update trip point. Please try again.' });
@@ -466,8 +471,22 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
                   route={route}
                   fromPointName={tripPoint.name}
                   toPointName={nextPointName}
-                  onEdit={() => onRouteChange?.()}
-                  onRemove={() => onRouteChange?.()}
+                  onEdit={(updatedRoute) => {
+                    const updatedTripPoint = {
+                      ...tripPoint,
+                      routesFrom: (tripPoint.routesFrom || []).map(r =>
+                        r.routeId === updatedRoute.routeId ? updatedRoute : r
+                      ),
+                    };
+                    onEdit(updatedTripPoint);
+                  }}
+                  onRemove={() => {
+                    const updatedTripPoint = {
+                      ...tripPoint,
+                      routesFrom: (tripPoint.routesFrom || []).filter(r => r.routeId !== route.routeId),
+                    };
+                    onEdit(updatedTripPoint);
+                  }}
                 />
               ))}
             </Box>
@@ -484,8 +503,13 @@ const TripPointSummary = ({ tripPoint, onEdit, onRemove, onAddNextPoint, hasNext
               defaultDepartureDate={tripPoint.departureDate ? tripPoint.departureDate.slice(0, 16) : undefined}
               defaultArrivalDate={nextPointArrivalDate ? nextPointArrivalDate.slice(0, 16) : undefined}
               onCancel={() => setShowRouteForm(false)}
-              onSuccess={() => {
-                onRouteChange?.();
+              onSuccess={(newRoute) => {
+                // Update the trip point with the new route
+                const updatedTripPoint = {
+                  ...tripPoint,
+                  routesFrom: [...(tripPoint.routesFrom || []), newRoute],
+                };
+                onEdit(updatedTripPoint);
                 setShowRouteForm(false);
               }}
             />

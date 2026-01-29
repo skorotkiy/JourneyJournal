@@ -22,6 +22,4 @@ public class UpdateTripPointRequest
 
     public string? Notes { get; set; }
 
-    public List<CreateAccommodationRequest> Accommodations { get; set; } = new();
-    public List<CreatePlaceToVisitRequest> PlacesToVisit { get; set; } = new();
 }

@@ -20,7 +20,7 @@ public static class MappingConfig
             .Map(dest => dest.Expenses, src => src.Expenses.OrderByDescending(e => e.ExpenseDate));
 
         // Configure TripPoint to TripPointDto mapping
-        TypeAdapterConfig<TripPoint, TripPointDto>.NewConfig()
+        TypeAdapterConfig<TripPoint, TripPointFullDto>.NewConfig()
             .Map(dest => dest.PlacesToVisit, src => src.PlacesToVisit.OrderBy(p => p.Order));
 
         // All other mappings will use default conventions

@@ -103,7 +103,7 @@ public class TripService
             CreatedAt = DateTime.UtcNow
         };
 
-        // Create trip points with related data
+        // Create trip points (only direct properties)
         foreach (var pointRequest in request.TripPoints.OrderBy(p => p.Order))
         {
             var tripPoint = new TripPoint
@@ -115,91 +115,7 @@ public class TripService
                 Notes = pointRequest.Notes,
                 CreatedAt = DateTime.UtcNow
             };
-
-            // Add accommodations
-            foreach (var accRequest in pointRequest.Accommodations)
-            {
-                ValidateAccommodationDates(accRequest.CheckInDate, accRequest.CheckOutDate);
-
-                tripPoint.Accommodations.Add(new Accommodation
-                {
-                    Name = accRequest.Name,
-                    AccommodationType = accRequest.AccommodationType,
-                    Address = accRequest.Address,
-                    CheckInDate = accRequest.CheckInDate,
-                    CheckOutDate = accRequest.CheckOutDate,
-                    WebsiteUrl = accRequest.WebsiteUrl,
-                    Cost = accRequest.Cost,
-                    Status = accRequest.Status,
-                    Notes = accRequest.Notes,
-                    CreatedAt = DateTime.UtcNow
-                });
-            }
-
-            // Add places to visit
-            foreach (var placeRequest in pointRequest.PlacesToVisit)
-            {
-                ValidateRating(placeRequest.Rating);
-
-                tripPoint.PlacesToVisit.Add(new PlaceToVisit
-                {
-                    Name = placeRequest.Name,
-                    Category = placeRequest.Category,
-                    Address = placeRequest.Address,
-                    Description = placeRequest.Description,
-                    Price = placeRequest.Price,
-                    WebsiteUrl = placeRequest.WebsiteUrl,
-                    UsefulLinks = placeRequest.UsefulLinks,
-                    Order = placeRequest.Order,
-                    Rating = placeRequest.Rating,
-                    VisitDate = placeRequest.VisitDate,
-                    VisitStatus = placeRequest.VisitStatus,
-                    AfterVisitNotes = placeRequest.AfterVisitNotes,
-                    CreatedAt = DateTime.UtcNow
-                });
-            }
-
             trip.TripPoints.Add(tripPoint);
-        }
-
-        // Add routes after all points are created
-        var tripPointsList = trip.TripPoints.ToList();
-        foreach (var pointRequest in request.TripPoints)
-        {
-            var currentPoint = tripPointsList.FirstOrDefault(p => p.Order == pointRequest.Order);
-            if (currentPoint is null) continue;
-
-            foreach (var routeRequest in pointRequest.Routes)
-            {
-                var fromPoint = tripPointsList.FirstOrDefault(p => p.Order == routeRequest.FromPointOrder);
-                var toPoint = tripPointsList.FirstOrDefault(p => p.Order == routeRequest.ToPointOrder);
-
-                if (fromPoint is null || toPoint is null)
-                {
-                    throw new InvalidOperationException($"Invalid route: points with order {routeRequest.FromPointOrder} or {routeRequest.ToPointOrder} not found");
-                }
-
-                if (routeRequest.FromPointOrder == routeRequest.ToPointOrder)
-                {
-                    throw new InvalidOperationException("Route cannot have the same starting and ending point");
-                }
-
-                fromPoint.RoutesFrom.Add(new RouteEntity
-                {
-                    FromPoint = fromPoint,
-                    ToPoint = toPoint,
-                    Name = routeRequest.Name,
-                    TransportationType = routeRequest.TransportationType,
-                    Carrier = routeRequest.Carrier,
-                    DepartureTime = routeRequest.DepartureTime,
-                    ArrivalTime = routeRequest.ArrivalTime,
-                    DurationMinutes = routeRequest.DurationMinutes,
-                    Cost = routeRequest.Cost,
-                    IsSelected = routeRequest.IsSelected,
-                    Notes = routeRequest.Notes,
-                    CreatedAt = DateTime.UtcNow
-                });
-            }
         }
 
         _context.Trips.Add(trip);

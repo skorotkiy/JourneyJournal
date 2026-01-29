@@ -18,6 +18,6 @@ public class TripDto
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
-    public List<TripPointDto> TripPoints { get; set; } = new();
+    public List<TripPointFullDto> TripPoints { get; set; } = new();
     public List<ExpenseDto> Expenses { get; set; } = new();
 }

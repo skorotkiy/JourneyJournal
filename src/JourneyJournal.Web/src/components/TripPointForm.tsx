@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { tripPointService } from '../services/tripPointService';
 
 import {
   Box,
@@ -19,6 +20,7 @@ import {
 
 interface TripPointFormProps {
   tripId: number;
+  order: number;
   tripStartDate?: string;
   tripEndDate?: string;
   prevTripPointDepartureDate?: string;
@@ -28,7 +30,7 @@ interface TripPointFormProps {
 
 import { DateHelper } from '../utils/DateHelper';
 
-const TripPointForm = ({ tripId: _tripId, tripStartDate, tripEndDate, prevTripPointDepartureDate, onCancel, onSuccess }: TripPointFormProps) => {
+const TripPointForm = ({ tripId: _tripId, order, tripStartDate, tripEndDate, prevTripPointDepartureDate, onCancel, onSuccess }: TripPointFormProps) => {
   const [formData, setFormData] = useState({
     name: '',
     arrivalDate: prevTripPointDepartureDate ? DateHelper.formatDateShort(prevTripPointDepartureDate) : (tripStartDate ? DateHelper.formatDateShort(tripStartDate) : ''),
@@ -93,7 +95,21 @@ const TripPointForm = ({ tripId: _tripId, tripStartDate, tripEndDate, prevTripPo
     setLoading(true);
     setErrors({});
     try {
-      onSuccess({ ...formData });
+      const payload = {
+        ...formData,
+        tripId: _tripId,
+        order,
+      };
+      const created = await tripPointService.create(payload);
+      setLoading(false);
+      // Merge into TripPointFull shape with empty relations
+      onSuccess({
+        ...created,
+        accommodations: [],
+        routesFrom: [],
+        routesTo: [],
+        placesToVisit: [],
+      });
     } catch (err: any) {
       setLoading(false);
       setErrors({ submit: err.message || 'Failed to add trip point' });

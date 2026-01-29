@@ -425,32 +425,21 @@ const TripDetailPage = () => {
       {!isEditing && showTripPointForm && trip && (
         <TripPointForm
           tripId={trip.tripId}
+          order={trip.tripPoints ? trip.tripPoints.length : 0}
           tripStartDate={trip.startDate ? DateHelper.formatDateShort(trip.startDate) : undefined}
           tripEndDate={trip.endDate ? DateHelper.formatDateShort(trip.endDate) : undefined}
           prevTripPointDepartureDate={trip.tripPoints && trip.tripPoints.length > 0 ? DateHelper.formatDateShort(trip.tripPoints[trip.tripPoints.length - 1].departureDate) : undefined}
           onCancel={() => setShowTripPointForm(false)}
-          onSuccess={async (newTripPoint) => {
-            try {
-              // Update trip with new trip point
-                      const updatedTripData = {
-                        name: trip.name,
-                        description: trip.description,
-                        startDate: DateHelper.formatDateShort(trip.startDate),
-                        endDate: trip.endDate ? DateHelper.formatDateShort(trip.endDate) : undefined,
-                      plannedCost: trip.plannedCost,
-                      totalCost: trip.totalCost,
-                      currency: trip.currency,
-                      isCompleted: trip.isCompleted,
-                      isDefault: trip.isDefault,
-                      tripPoints: transformTripPointsForBackend([...(trip.tripPoints || []), newTripPoint]),
-                          };
-                          const updatedTrip = await tripService.update(trip.tripId.toString(), updatedTripData);
-              setTrip(updatedTrip);
-              setCreatedTripPoints([]);
-              setShowTripPointForm(false);
-            } catch (err) {
-              setError('Failed to save trip point. Please try again.');
-            }
+          onSuccess={(newTripPoint) => {
+            setTrip((prevTrip) => {
+              if (!prevTrip) return prevTrip;
+              return {
+                ...prevTrip,
+                tripPoints: [...(prevTrip.tripPoints || []), newTripPoint],
+              };
+            });
+            setCreatedTripPoints([]);
+            setShowTripPointForm(false);
           }}
         />
       )}
@@ -509,59 +498,35 @@ const TripDetailPage = () => {
             <Box key={tripPoint.tripPointId}>
               <TripPointSummary
                 tripPoint={tripPoint}
-                onEdit={async (updatedTripPoint) => {
-                  try {
-                    const updatedTripPoints = (trip.tripPoints || []).map((tp) =>
-                      tp.tripPointId === updatedTripPoint.tripPointId ? updatedTripPoint : tp
-                    );
-                    const updatedTripData = {
-                      name: trip.name,
-                      description: trip.description,
-                      startDate: DateHelper.formatDateShort(trip.startDate),
-                      endDate: trip.endDate ? DateHelper.formatDateShort(trip.endDate) : undefined,
-                      plannedCost: trip.plannedCost,
-                      totalCost: trip.totalCost,
-                      currency: trip.currency,
-                      isCompleted: trip.isCompleted,
-                      isDefault: trip.isDefault,
-                      tripPoints: transformTripPointsForBackend(updatedTripPoints),
+                onEdit={(updatedTripPoint) => {
+                  // Only update the relevant TripPoint in state, do not refresh the whole trip
+                  setTrip((prevTrip) => {
+                    if (!prevTrip) return prevTrip;
+                    return {
+                      ...prevTrip,
+                      tripPoints: (prevTrip.tripPoints || []).map((tp) =>
+                        tp.tripPointId === updatedTripPoint.tripPointId ? updatedTripPoint : tp
+                      ),
                     };
-                    const updatedTrip = await tripService.update(trip.tripId.toString(), updatedTripData);
-                    setTrip(updatedTrip);
-                  } catch (err) {
-                    setError('Failed to update trip point. Please try again.');
-                  }
+                  });
                 }}
-                onRemove={async () => {
-                  try {
-                    // Filter out the deleted trip point
-                    const filteredTripPoints = (trip.tripPoints || [])
+                onRemove={() => {
+                  setTrip((prevTrip) => {
+                    if (!prevTrip) return prevTrip;
+                    const filteredTripPoints = (prevTrip.tripPoints || [])
                       .filter((tp) => tp.tripPointId !== tripPoint.tripPointId)
                       .map((tp, index) => ({
                         ...tp,
-                        order: index, // Reorder remaining points
-                        // Remove routes that reference the deleted trip point
+                        order: index,
                         routesFrom: (tp.routesFrom || []).filter(
                           (route) => route.toPointId !== tripPoint.tripPointId
                         ),
                       }));
-                    const updatedTripData = {
-                      name: trip.name,
-                      description: trip.description,
-                      startDate: DateHelper.formatDateShort(trip.startDate),
-                      endDate: trip.endDate ? DateHelper.formatDateShort(trip.endDate) : undefined,
-                      plannedCost: trip.plannedCost,
-                      totalCost: trip.totalCost,
-                      currency: trip.currency,
-                      isCompleted: trip.isCompleted,
-                      isDefault: trip.isDefault,
-                      tripPoints: transformTripPointsForBackend(filteredTripPoints),
+                    return {
+                      ...prevTrip,
+                      tripPoints: filteredTripPoints,
                     };
-                    const updatedTrip = await tripService.update(trip.tripId.toString(), updatedTripData);
-                    setTrip(updatedTrip);
-                  } catch (err) {
-                    setError('Failed to remove trip point. Please try again.');
-                  }
+                  });
                 }}
                 onAddRoute={() => {}}
                 onAddNextPoint={() => {
@@ -578,13 +543,6 @@ const TripDetailPage = () => {
                 nextPointArrivalDate={
                   index < (trip.tripPoints || []).length - 1 ? (trip.tripPoints || [])[index + 1].arrivalDate : undefined
                 }
-                onRouteChange={async () => {
-                  try {
-                    const refreshedTrip = await tripService.getById(trip.tripId.toString());
-                    setTrip(refreshedTrip);
-                  } catch (err) {
-                  }
-                }}
                 renderAddNextPointButton={() => (
                   addAfterPointId === String(tripPoint.tripPointId) || showTripPointForm ? (
                     <Button
@@ -634,38 +592,27 @@ const TripDetailPage = () => {
                 <Box sx={{ mb: 2 }}>
                   <TripPointForm
                     tripId={trip.tripId}
+                    order={(trip.tripPoints ? trip.tripPoints.findIndex(tp => tp.tripPointId === tripPoint.tripPointId) + 1 : 0)}
                     tripStartDate={trip.startDate ? DateHelper.formatDateShort(trip.startDate) : undefined}
                     tripEndDate={trip.endDate ? DateHelper.formatDateShort(trip.endDate) : undefined}
                     prevTripPointDepartureDate={tripPoint.departureDate ? DateHelper.formatDateShort(tripPoint.departureDate) : undefined}
                     onCancel={() => setAddAfterPointId(null)}
-                    onSuccess={async (newTripPoint) => {
-                      try {
-                        // Insert new trip point and reorder
-                        const updatedTripPoints = [...(trip.tripPoints || [])];
+                    onSuccess={(newTripPoint) => {
+                      setTrip((prevTrip) => {
+                        if (!prevTrip) return prevTrip;
+                        const updatedTripPoints = [...(prevTrip.tripPoints || [])];
                         const insertIndex = updatedTripPoints.findIndex(tp => tp.tripPointId === tripPoint.tripPointId) + 1;
                         updatedTripPoints.splice(insertIndex, 0, newTripPoint);
                         // Reorder all points
                         updatedTripPoints.forEach((tp, idx) => {
                           tp.order = idx;
                         });
-                        const updatedTripData = {
-                          name: trip.name,
-                          description: trip.description,
-                          startDate: DateHelper.formatDateShort(trip.startDate),
-                          endDate: trip.endDate ? DateHelper.formatDateShort(trip.endDate) : undefined,
-                          plannedCost: trip.plannedCost,
-                          totalCost: trip.totalCost,
-                          currency: trip.currency,
-                          isCompleted: trip.isCompleted,
-                          isDefault: trip.isDefault,
-                          tripPoints: transformTripPointsForBackend(updatedTripPoints),
+                        return {
+                          ...prevTrip,
+                          tripPoints: updatedTripPoints,
                         };
-                        const updatedTrip = await tripService.update(trip.tripId.toString(), updatedTripData);
-                        setTrip(updatedTrip);
-                        setAddAfterPointId(null);
-                      } catch (err) {
-                        setError('Failed to add trip point. Please try again.');
-                      }
+                      });
+                      setAddAfterPointId(null);
                     }}
                   />
                 </Box>
@@ -708,14 +655,11 @@ const TripDetailPage = () => {
                 nextPointArrivalDate={
                   index < createdTripPoints.length - 1 ? createdTripPoints[index + 1].arrivalDate : undefined
                 }
-                onRouteChange={() => {
-                  // For created trip points, routes are managed locally in state
-                  // No need to refresh from server since they're not persisted yet
-                }}
               />
               {addAfterPointId === tripPoint.tripPointId && trip && (
                 <TripPointForm
                   tripId={trip.tripId}
+                  order={index + 1}
                   tripStartDate={trip.startDate ? DateHelper.formatDateShort(trip.startDate) : undefined}
                   tripEndDate={trip.endDate ? DateHelper.formatDateShort(trip.endDate) : undefined}
                   prevTripPointDepartureDate={tripPoint.departureDate ? DateHelper.formatDateShort(tripPoint.departureDate) : undefined}

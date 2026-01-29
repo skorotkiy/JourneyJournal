@@ -27,6 +27,7 @@ builder.Services.AddScoped<TripService>();
 builder.Services.AddScoped<ExpenseService>();
 builder.Services.AddScoped<AccommodationService>();
 builder.Services.AddScoped<RouteService>();
+builder.Services.AddScoped<TripPointService>();
 
 // Configure CORS for web client
 builder.Services.AddCors(options =>

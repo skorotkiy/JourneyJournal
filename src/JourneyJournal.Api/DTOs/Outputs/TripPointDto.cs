@@ -15,8 +15,4 @@ public class TripPointDto
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
-    public List<AccommodationDto> Accommodations { get; set; } = new();
-    public List<RouteDto> RoutesFrom { get; set; } = new();
-    public List<RouteDto> RoutesTo { get; set; } = new();
-    public List<PlaceToVisitDto> PlacesToVisit { get; set; } = new();
 }

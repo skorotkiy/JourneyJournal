@@ -8,6 +8,8 @@ namespace JourneyJournal.Api.DTOs.Inputs;
 public class CreateTripPointRequest
 {
     [Required]
+    public int TripId { get; set; }
+    [Required]
     [MaxLength(200)]
     public string Name { get; set; } = string.Empty;
 
@@ -22,7 +24,4 @@ public class CreateTripPointRequest
 
     public string? Notes { get; set; }
 
-    public List<CreateAccommodationRequest> Accommodations { get; set; } = new();
-    public List<CreateRouteRequest> Routes { get; set; } = new();
-    public List<CreatePlaceToVisitRequest> PlacesToVisit { get; set; } = new();
 }

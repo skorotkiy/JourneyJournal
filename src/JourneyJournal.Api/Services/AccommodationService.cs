@@ -58,7 +58,7 @@ public class AccommodationService
         await _context.SaveChangesAsync();
 
         // Recalculate trip total cost
-        await _tripService.RecalculateTripTotalCostFromTripPointAsync(tripPoint.TripId);
+        await _tripService.RecalculateTripTotalCostFromTripPointAsync(tripPoint.TripPointId);
 
         return _mapper.Map<AccommodationDto>(accommodation);
     }
