@@ -1,10 +1,11 @@
 #!/usr/bin/env pwsh
 # Script to run the JourneyJournal Web Client
 
-$webProjectPath = Join-Path $PSScriptRoot "src/JourneyJournal.Web"
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$webProjectPath = Join-Path $scriptDir "..\src\JourneyJournal.Web"
 
 Write-Host "Starting Web Client..." -ForegroundColor Cyan
-Set-Location $webProjectPath
+Push-Location $webProjectPath
 
 # Check if node_modules exists
 if (-not (Test-Path "node_modules")) {
@@ -21,3 +22,4 @@ Write-Host "Web client will be available at: http://localhost:5173 (or next avai
 Write-Host "Press Ctrl+C to stop the server.`n" -ForegroundColor Yellow
 
 npm run dev
+Pop-Location

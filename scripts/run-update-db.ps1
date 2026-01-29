@@ -3,8 +3,11 @@
 # Handles connection string issues by using absolute path
 
 
-$apiProjectPath = Join-Path $PSScriptRoot "src/JourneyJournal.Api"
-$dataProjectPath = Join-Path $PSScriptRoot "src/JourneyJournal.Data"
+
+# Always resolve paths relative to this script's folder
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$apiProjectPath = Join-Path $scriptDir "..\src\JourneyJournal.Api"
+$dataProjectPath = Join-Path $scriptDir "..\src\JourneyJournal.Data"
 $dbDirectory = Join-Path $dataProjectPath "db"
 $dbPath = Join-Path $dbDirectory "journeydb.sqlite"
 
@@ -28,10 +31,12 @@ Write-Host "Updating database with migrations..." -ForegroundColor Cyan
 Write-Host "Database path: $absoluteDbPath" -ForegroundColor Gray
 Write-Host ""
 
-Set-Location $apiProjectPath
 
+# Change to API project directory for EF tooling
+Push-Location $apiProjectPath
 # Run database update with explicit connection string
 dotnet ef database update --project ../JourneyJournal.Data --connection $connectionString
+Pop-Location
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "`nDatabase updated successfully!" -ForegroundColor Green

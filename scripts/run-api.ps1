@@ -3,7 +3,8 @@
 # Checks if port 5062 is in use and kills the process if needed
 
 $apiPort = 5062
-$apiProjectPath = Join-Path $PSScriptRoot "src/JourneyJournal.Api"
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$apiProjectPath = Join-Path $scriptDir "..\src\JourneyJournal.Api"
 
 Write-Host "Checking if port $apiPort is in use..." -ForegroundColor Cyan
 
@@ -30,7 +31,7 @@ else {
 }
 
 Write-Host "`nBuilding API project..." -ForegroundColor Cyan
-Set-Location $apiProjectPath
+Push-Location $apiProjectPath
 
 Write-Host "`nStarting API server with hot reload..." -ForegroundColor Cyan
 Write-Host "API will be available at: http://localhost:$apiPort" -ForegroundColor Green
@@ -38,3 +39,4 @@ Write-Host "Hot reload enabled - API will automatically restart on code changes.
 Write-Host "Press Ctrl+C to stop the server.`n" -ForegroundColor Yellow
 
 dotnet watch run --no-hot-reload
+Pop-Location
