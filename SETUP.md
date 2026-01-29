@@ -13,6 +13,7 @@ This guide will help you set up the JourneyJournal application for local develop
 
 ---
 
+
 ## 1. Clone the Repository
 
 ```
@@ -22,7 +23,19 @@ cd JourneyJournal
 
 ---
 
-## 2. Database Setup
+## 2. Restore Dependencies
+
+After cloning the repository, you must restore all required NuGet packages before building or running the project. Simply run:
+
+```
+dotnet restore
+```
+
+in the root of the repository.
+
+---
+
+## 3. Database Setup
 
 The application uses SQLite. The database file is located at:
 
@@ -33,8 +46,7 @@ src/JourneyJournal.Data/db/journeydb.sqlite
 
 ### Apply Migrations (if needed)
 
-
-You can apply migrations using the provided PowerShell script:
+You can apply migrations using the provided PowerShell script. On the first run, this script will automatically create the database file and the db folder if they do not exist:
 
 ```
 pwsh ./scripts/run-update-db.ps1
@@ -51,7 +63,7 @@ dotnet ef database update --startup-project ../JourneyJournal.Api
 
 ---
 
-## 3. Launch the API
+## 4. Launch the API
 
 
 From the root directory, run:
@@ -71,7 +83,7 @@ The API will be available at:
 
 ---
 
-## 4. Launch the Web Client
+## 5. Launch the Web Client
 
 
 From the root directory:
@@ -93,7 +105,7 @@ The web client will be available at:
 
 ---
 
-## 5. Environment Variables
+## 6. Environment Variables
 
 - API base URL is set in `src/JourneyJournal.Web/.env.development` as `VITE_API_URL`.
 - Default: `http://localhost:5062/api`
@@ -101,7 +113,7 @@ The web client will be available at:
 ---
 
 
-## 6. PowerShell Scripts
+## 7. PowerShell Scripts
 
 
 **Important:** You should run `run-update-db.ps1` first to ensure the database and migrations are up to date before starting the API or web client.
@@ -127,23 +139,13 @@ You can run these scripts from the project root in any PowerShell terminal. They
 ----
 
 
-## 7. Additional Notes
+## 8. Additional Notes
 
 - CORS is enabled for `http://localhost:5173` and `http://localhost:3000` by default.
 - Use the `JourneyJournal.Api.http` file for API testing (VS Code REST Client extension).
 - For troubleshooting, check the API and web client terminal output for errors.
 
-### First Run: Restore Dependencies
 
-After cloning the repository, you must restore all required NuGet packages before building or running the project. Simply run:
-
-```
-dotnet restore
-```
-
-in the root of the repository.
-
----
 
 ## 8. Clean Build (if needed)
 
